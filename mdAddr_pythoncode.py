@@ -715,7 +715,7 @@ class mdAddr(object):
 	def GetResults(self):
 		return lib.mdAddrGetResults(self.I).decode('utf-8')
 
-	def GetResultCodeDescription(self, resultCode, opt):
+	def GetResultCodeDescription(self, resultCode, opt=0):
 		return lib.mdAddrGetResultCodeDescription(self.I, resultCode.encode('utf-8'), ResultCdDescOpt(opt).value).decode('utf-8')
 
 	def SetPS3553_B1_ProcessorName(self, p1):
