@@ -13,7 +13,7 @@ For further details, please visit: https://www.melissa.com/reference-guides/addr
 ## Tested Environments
 
 - Windows 64-bit Python 3.8.7
-- Melissa Address Object for 2023-11
+- Melissa Address Object for 2023-12
 
 ## Getting Started
 
