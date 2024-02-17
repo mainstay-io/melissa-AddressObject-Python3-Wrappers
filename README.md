@@ -12,8 +12,10 @@ For further details, please visit: https://www.melissa.com/reference-guides/addr
 
 ## Tested Environments
 
-- Windows 64-bit Python 3.8.7
+- Windows 10 64-bit Python 3.8.7, Powershell 5.1
+- Linux 64-bit Python 3.8.7, Ubuntu 20.04.05 LTS
 - Melissa Address Object for 2024-01
+- Wrapper file(s) have not changed since 2023-08
 
 ## Getting Started
 
@@ -34,7 +36,7 @@ import mdAddr_pythoncode
 ## See also
 
 - [Melissa - Address Object Windows Python3](https://github.com/MelissaData/AddressObject-Python3)
-- [Melissa - Address Object Linux Python3](https://github.com/MelissaData/AddressObject-Python3)
+- [Melissa - Address Object Linux Python3](https://github.com/MelissaData/AddressObject-Python3-Linux)
     
 ## Contact Us
 
