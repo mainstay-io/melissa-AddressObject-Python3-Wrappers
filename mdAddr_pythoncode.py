@@ -9,7 +9,11 @@ if (os.name == 'nt' and sys.version_info[:2] >= (3,8)):
 elif (os.name == 'nt'):
   lib = ctypes.CDLL('mdAddr.dll')
 else:
-  lib = ctypes.CDLL('libmdAddr.so')
+  # OX has patched the commented out code to support loading the library
+  # from a custom path, as we load multiple versions.
+  # lib = ctypes.CDLL('libmdAddr.so')
+  lib_path = os.environ['MELISSA_LD_LIBRARY_PATH']
+  lib = ctypes.CDLL(os.path.join(lib_path, 'libmdAddr.so'))
 
 lib.mdAddrCreate.argtypes = []
 lib.mdAddrCreate.restype = c_void_p
