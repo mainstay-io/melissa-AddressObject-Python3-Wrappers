@@ -636,7 +636,7 @@ class mdAddr(object):
 		lib.mdAddrDestroy(self.I)
 
 	def Initialize(self, p1, p2, p3):
-		return ProgramStatus(lib.mdAddrInitialize(self.I, p1.encode('latin_1'), p2.encode('latin_1'), p3.encode('latin_1')))
+		return ProgramStatus(lib.mdAddrInitialize(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'), p3.encode('latin_1', errors='ignore')))
 
 	def InitializeDataFiles(self):
 		return ProgramStatus(lib.mdAddrInitializeDataFiles(self.I))
@@ -645,7 +645,7 @@ class mdAddr(object):
 		return lib.mdAddrGetInitializeErrorString(self.I).decode('latin_1')
 
 	def SetLicenseString(self, p1):
-		return lib.mdAddrSetLicenseString(self.I, p1.encode('latin_1'))
+		return lib.mdAddrSetLicenseString(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def GetBuildNumber(self):
 		return lib.mdAddrGetBuildNumber(self.I).decode('latin_1')
@@ -666,31 +666,31 @@ class mdAddr(object):
 		return lib.mdAddrGetCanadianExpirationDate(self.I).decode('latin_1')
 
 	def SetPathToUSFiles(self, p1):
-		lib.mdAddrSetPathToUSFiles(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPathToUSFiles(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPathToCanadaFiles(self, p1):
-		lib.mdAddrSetPathToCanadaFiles(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPathToCanadaFiles(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPathToDPVDataFiles(self, p1):
-		lib.mdAddrSetPathToDPVDataFiles(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPathToDPVDataFiles(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPathToLACSLinkDataFiles(self, p1):
-		lib.mdAddrSetPathToLACSLinkDataFiles(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPathToLACSLinkDataFiles(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPathToSuiteLinkDataFiles(self, p1):
-		lib.mdAddrSetPathToSuiteLinkDataFiles(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPathToSuiteLinkDataFiles(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPathToSuiteFinderDataFiles(self, p1):
-		lib.mdAddrSetPathToSuiteFinderDataFiles(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPathToSuiteFinderDataFiles(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPathToRBDIFiles(self, p1):
-		lib.mdAddrSetPathToRBDIFiles(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPathToRBDIFiles(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def GetRBDIDatabaseDate(self):
 		return lib.mdAddrGetRBDIDatabaseDate(self.I).decode('latin_1')
 
 	def SetPathToAddrKeyDataFiles(self, p1):
-		lib.mdAddrSetPathToAddrKeyDataFiles(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPathToAddrKeyDataFiles(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def ClearProperties(self):
 		lib.mdAddrClearProperties(self.I)
@@ -720,37 +720,37 @@ class mdAddr(object):
 		return lib.mdAddrGetResults(self.I).decode('latin_1')
 
 	def GetResultCodeDescription(self, resultCode, opt=0):
-		return lib.mdAddrGetResultCodeDescription(self.I, resultCode.encode('latin_1'), ResultCdDescOpt(opt).value).decode('latin_1')
+		return lib.mdAddrGetResultCodeDescription(self.I, resultCode.encode('latin_1', errors='ignore'), ResultCdDescOpt(opt).value).decode('latin_1')
 
 	def SetPS3553_B1_ProcessorName(self, p1):
-		lib.mdAddrSetPS3553_B1_ProcessorName(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPS3553_B1_ProcessorName(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPS3553_B4_ListName(self, p1):
-		lib.mdAddrSetPS3553_B4_ListName(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPS3553_B4_ListName(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPS3553_D3_Name(self, p1):
-		lib.mdAddrSetPS3553_D3_Name(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPS3553_D3_Name(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPS3553_D3_Company(self, p1):
-		lib.mdAddrSetPS3553_D3_Company(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPS3553_D3_Company(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPS3553_D3_Address(self, p1):
-		lib.mdAddrSetPS3553_D3_Address(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPS3553_D3_Address(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPS3553_D3_City(self, p1):
-		lib.mdAddrSetPS3553_D3_City(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPS3553_D3_City(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPS3553_D3_State(self, p1):
-		lib.mdAddrSetPS3553_D3_State(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPS3553_D3_State(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPS3553_D3_ZIP(self, p1):
-		lib.mdAddrSetPS3553_D3_ZIP(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPS3553_D3_ZIP(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def GetFormPS3553(self):
 		return lib.mdAddrGetFormPS3553(self.I).decode('latin_1')
 
 	def SaveFormPS3553(self, p1):
-		return lib.mdAddrSaveFormPS3553(self.I, p1.encode('latin_1'))
+		return lib.mdAddrSaveFormPS3553(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def ResetFormPS3553(self):
 		lib.mdAddrResetFormPS3553(self.I)
@@ -771,16 +771,16 @@ class mdAddr(object):
 		return lib.mdAddrGetFormSOA(self.I).decode('latin_1')
 
 	def SaveFormSOA(self, p1):
-		lib.mdAddrSaveFormSOA(self.I, p1.encode('latin_1'))
+		lib.mdAddrSaveFormSOA(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def ResetFormSOA(self):
 		lib.mdAddrResetFormSOA(self.I)
 
 	def SetSOACustomerInfo(self, customerName, customerAddress):
-		lib.mdAddrSetSOACustomerInfo(self.I, customerName.encode('latin_1'), customerAddress.encode('latin_1'))
+		lib.mdAddrSetSOACustomerInfo(self.I, customerName.encode('latin_1', errors='ignore'), customerAddress.encode('latin_1', errors='ignore'))
 
 	def SetSOACPCNumber(self, CPCNumber):
-		lib.mdAddrSetSOACPCNumber(self.I, CPCNumber.encode('latin_1'))
+		lib.mdAddrSetSOACPCNumber(self.I, CPCNumber.encode('latin_1', errors='ignore'))
 
 	def GetSOACustomerInfo(self):
 		return lib.mdAddrGetSOACustomerInfo(self.I).decode('latin_1')
@@ -804,70 +804,70 @@ class mdAddr(object):
 		return lib.mdAddrGetSOAErrorString(self.I).decode('latin_1')
 
 	def SetCompany(self, p1):
-		lib.mdAddrSetCompany(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetCompany(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetLastName(self, p1):
-		lib.mdAddrSetLastName(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetLastName(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetAddress(self, p1):
-		lib.mdAddrSetAddress(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetAddress(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetAddress2(self, p1):
-		lib.mdAddrSetAddress2(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetAddress2(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetLastLine(self, p1):
-		lib.mdAddrSetLastLine(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetLastLine(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetSuite(self, p1):
-		lib.mdAddrSetSuite(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetSuite(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetCity(self, p1):
-		lib.mdAddrSetCity(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetCity(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetState(self, p1):
-		lib.mdAddrSetState(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetState(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetZip(self, p1):
-		lib.mdAddrSetZip(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetZip(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetPlus4(self, p1):
-		lib.mdAddrSetPlus4(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetPlus4(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetUrbanization(self, p1):
-		lib.mdAddrSetUrbanization(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetUrbanization(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedAddressRange(self, p1):
-		lib.mdAddrSetParsedAddressRange(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedAddressRange(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedPreDirection(self, p1):
-		lib.mdAddrSetParsedPreDirection(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedPreDirection(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedStreetName(self, p1):
-		lib.mdAddrSetParsedStreetName(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedStreetName(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedSuffix(self, p1):
-		lib.mdAddrSetParsedSuffix(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedSuffix(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedPostDirection(self, p1):
-		lib.mdAddrSetParsedPostDirection(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedPostDirection(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedSuiteName(self, p1):
-		lib.mdAddrSetParsedSuiteName(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedSuiteName(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedSuiteRange(self, p1):
-		lib.mdAddrSetParsedSuiteRange(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedSuiteRange(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedRouteService(self, p1):
-		lib.mdAddrSetParsedRouteService(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedRouteService(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedLockBox(self, p1):
-		lib.mdAddrSetParsedLockBox(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedLockBox(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetParsedDeliveryInstallation(self, p1):
-		lib.mdAddrSetParsedDeliveryInstallation(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetParsedDeliveryInstallation(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def SetCountryCode(self, p1):
-		lib.mdAddrSetCountryCode(self.I, p1.encode('latin_1'))
+		lib.mdAddrSetCountryCode(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def VerifyAddress(self):
 		return lib.mdAddrVerifyAddress(self.I)
@@ -1002,10 +1002,10 @@ class mdAddr(object):
 		return lib.mdAddrGetMelissaAddressKeyBase(self.I).decode('latin_1')
 
 	def GetOutputParameter(self, p1):
-		return lib.mdAddrGetOutputParameter(self.I, p1.encode('latin_1')).decode('latin_1')
+		return lib.mdAddrGetOutputParameter(self.I, p1.encode('latin_1', errors='ignore')).decode('latin_1')
 
 	def SetInputParameter(self, p1, p2):
-		return lib.mdAddrSetInputParameter(self.I, p1.encode('latin_1'), p2.encode('latin_1'))
+		return lib.mdAddrSetInputParameter(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'))
 
 	def FindSuggestion(self):
 		return lib.mdAddrFindSuggestion(self.I)
@@ -1158,10 +1158,10 @@ class mdAddr(object):
 		return lib.mdAddrGetParsedDeliveryInstallation(self.I).decode('latin_1')
 
 	def SetReserved(self, p1, p2):
-		lib.mdAddrSetReserved(self.I, p1.encode('latin_1'), p2.encode('latin_1'))
+		lib.mdAddrSetReserved(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'))
 
 	def GetReserved(self, p1):
-		return lib.mdAddrGetReserved(self.I, p1.encode('latin_1')).decode('latin_1')
+		return lib.mdAddrGetReserved(self.I, p1.encode('latin_1', errors='ignore')).decode('latin_1')
 
 # mdParse Enumerations
 class ProgramStatus(Enum):
@@ -1218,22 +1218,22 @@ class mdParse(object):
 		lib.mdParseDestroy(self.I)
 
 	def Initialize(self, p1):
-		return ProgramStatus(lib.mdParseInitialize(self.I, p1.encode('latin_1')))
+		return ProgramStatus(lib.mdParseInitialize(self.I, p1.encode('latin_1', errors='ignore')))
 
 	def GetBuildNumber(self):
 		return lib.mdParseGetBuildNumber(self.I).decode('latin_1')
 
 	def Parse(self, p1):
-		lib.mdParseParse(self.I, p1.encode('latin_1'))
+		lib.mdParseParse(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def ParseCanadian(self, p1):
-		lib.mdParseParseCanadian(self.I, p1.encode('latin_1'))
+		lib.mdParseParseCanadian(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def ParseNext(self):
 		return lib.mdParseParseNext(self.I)
 
 	def LastLineParse(self, p1):
-		lib.mdParseLastLineParse(self.I, p1.encode('latin_1'))
+		lib.mdParseLastLineParse(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def GetZip(self):
 		return lib.mdParseGetZip(self.I).decode('latin_1')
@@ -1344,7 +1344,7 @@ class mdStreet(object):
 		lib.mdStreetDestroy(self.I)
 
 	def Initialize(self, p1, p2, p3):
-		return ProgramStatus(lib.mdStreetInitialize(self.I, p1.encode('latin_1'), p2.encode('latin_1'), p3.encode('latin_1')))
+		return ProgramStatus(lib.mdStreetInitialize(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'), p3.encode('latin_1', errors='ignore')))
 
 	def GetInitializeErrorString(self):
 		return lib.mdStreetGetInitializeErrorString(self.I).decode('latin_1')
@@ -1356,25 +1356,25 @@ class mdStreet(object):
 		return lib.mdStreetGetBuildNumber(self.I).decode('latin_1')
 
 	def SetLicenseString(self, p1):
-		return lib.mdStreetSetLicenseString(self.I, p1.encode('latin_1'))
+		return lib.mdStreetSetLicenseString(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def GetLicenseExpirationDate(self):
 		return lib.mdStreetGetLicenseExpirationDate(self.I).decode('latin_1')
 
 	def FindStreet(self, p1, p2, p3):
-		return lib.mdStreetFindStreet(self.I, p1.encode('latin_1'), p2.encode('latin_1'), p3)
+		return lib.mdStreetFindStreet(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'), p3)
 
 	def FindStreetNext(self):
 		return lib.mdStreetFindStreetNext(self.I)
 
 	def IsAddressInRange(self, p1, p2, p3):
-		return lib.mdStreetIsAddressInRange(self.I, p1.encode('latin_1'), p2.encode('latin_1'), p3.encode('latin_1'))
+		return lib.mdStreetIsAddressInRange(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'), p3.encode('latin_1', errors='ignore'))
 
 	def IsAddressInRange2(self, p1, p2, p3, p4):
-		return lib.mdStreetIsAddressInRange2(self.I, p1.encode('latin_1'), p2.encode('latin_1'), p3.encode('latin_1'), p4.encode('latin_1'))
+		return lib.mdStreetIsAddressInRange2(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'), p3.encode('latin_1', errors='ignore'), p4.encode('latin_1', errors='ignore'))
 
 	def GetAutoCompletion(self, p1, p2, p3, p4):
-		return lib.mdStreetGetAutoCompletion(self.I, p1.encode('latin_1'), p2.encode('latin_1'), AutoCompletionMode(p3).value, p4).decode('latin_1')
+		return lib.mdStreetGetAutoCompletion(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'), AutoCompletionMode(p3).value, p4).decode('latin_1')
 
 	def ResetAutoCompletion(self):
 		lib.mdStreetResetAutoCompletion(self.I)
@@ -1509,7 +1509,7 @@ class mdZip(object):
 		lib.mdZipDestroy(self.I)
 
 	def Initialize(self, p1, p2, p3):
-		return ProgramStatus(lib.mdZipInitialize(self.I, p1.encode('latin_1'), p2.encode('latin_1'), p3.encode('latin_1')))
+		return ProgramStatus(lib.mdZipInitialize(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'), p3.encode('latin_1', errors='ignore')))
 
 	def GetInitializeErrorString(self):
 		return lib.mdZipGetInitializeErrorString(self.I).decode('latin_1')
@@ -1521,25 +1521,25 @@ class mdZip(object):
 		return lib.mdZipGetBuildNumber(self.I).decode('latin_1')
 
 	def SetLicenseString(self, p1):
-		return lib.mdZipSetLicenseString(self.I, p1.encode('latin_1'))
+		return lib.mdZipSetLicenseString(self.I, p1.encode('latin_1', errors='ignore'))
 
 	def GetLicenseExpirationDate(self):
 		return lib.mdZipGetLicenseExpirationDate(self.I).decode('latin_1')
 
 	def FindZip(self, p1, p2):
-		return lib.mdZipFindZip(self.I, p1.encode('latin_1'), p2)
+		return lib.mdZipFindZip(self.I, p1.encode('latin_1', errors='ignore'), p2)
 
 	def FindZipNext(self):
 		return lib.mdZipFindZipNext(self.I)
 
 	def FindZipInCity(self, p1, p2):
-		return lib.mdZipFindZipInCity(self.I, p1.encode('latin_1'), p2.encode('latin_1'))
+		return lib.mdZipFindZipInCity(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'))
 
 	def FindZipInCityNext(self):
 		return lib.mdZipFindZipInCityNext(self.I)
 
 	def FindCityInState(self, p1, p2):
-		return lib.mdZipFindCityInState(self.I, p1.encode('latin_1'), p2.encode('latin_1'))
+		return lib.mdZipFindCityInState(self.I, p1.encode('latin_1', errors='ignore'), p2.encode('latin_1', errors='ignore'))
 
 	def FindCityInStateNext(self):
 		return lib.mdZipFindCityInStateNext(self.I)
@@ -1551,10 +1551,10 @@ class mdZip(object):
 		return lib.mdZipComputeBearing(self.I)
 
 	def GetCountyNameFromFips(self, p1):
-		return lib.mdZipGetCountyNameFromFips(self.I, p1.encode('latin_1')).decode('latin_1')
+		return lib.mdZipGetCountyNameFromFips(self.I, p1.encode('latin_1', errors='ignore')).decode('latin_1')
 
 	def GetSCFArea(self, p1, p2, p3, p4, p5):
-		return lib.mdZipGetSCFArea(self.I, p1.encode('latin_1'), p2, p3, p4, p5)
+		return lib.mdZipGetSCFArea(self.I, p1.encode('latin_1', errors='ignore'), p2, p3, p4, p5)
 
 	def GetZip(self):
 		return lib.mdZipGetZip(self.I).decode('latin_1')
