@@ -1545,10 +1545,10 @@ class mdZip(object):
 		return lib.mdZipFindCityInStateNext(self.I)
 
 	def ComputeDistance(self, p1, p2, p3, p4):
-		return lib.mdZipComputeDistance(self.I)
+		return lib.mdZipComputeDistance(self.I, p1, p2, p3, p4)
 
 	def ComputeBearing(self, p1, p2, p3, p4):
-		return lib.mdZipComputeBearing(self.I)
+		return lib.mdZipComputeBearing(self.I, p1, p2, p3, p4)
 
 	def GetCountyNameFromFips(self, p1):
 		return lib.mdZipGetCountyNameFromFips(self.I, p1.encode('latin_1', errors='ignore')).decode('latin_1')
