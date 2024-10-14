@@ -263,18 +263,25 @@ lib.mdAddrGetMelissaAddressKey.argtypes = [c_void_p]
 lib.mdAddrGetMelissaAddressKey.restype = c_char_p
 lib.mdAddrGetMelissaAddressKeyBase.argtypes = [c_void_p]
 lib.mdAddrGetMelissaAddressKeyBase.restype = c_char_p
-lib.mdAddrGetOutputParameter.argtypes = [c_void_p, c_char_p]
-lib.mdAddrGetOutputParameter.restype = c_char_p
-lib.mdAddrSetInputParameter.argtypes = [c_void_p, c_char_p, c_char_p]
-lib.mdAddrSetInputParameter.restype = c_int
+if os.environ['DQS_VERSION'] >= 'dqs.202306':
+  # GetOutputParameter is new in dqs.202306
+  # https://releasenotes.melissa.com/on-premise-api/address-object/#202306
+  lib.mdAddrGetOutputParameter.argtypes = [c_void_p, c_char_p]
+  lib.mdAddrGetOutputParameter.restype = c_char_p
+  lib.mdAddrSetInputParameter.argtypes = [c_void_p, c_char_p, c_char_p]
+  lib.mdAddrSetInputParameter.restype = c_int
 lib.mdAddrFindSuggestion.argtypes = [c_void_p]
 lib.mdAddrFindSuggestion.restype = c_bool
 lib.mdAddrFindSuggestionNext.argtypes = [c_void_p]
 lib.mdAddrFindSuggestionNext.restype = c_bool
 lib.mdAddrGetDsfNoStats.argtypes = [c_void_p]
 lib.mdAddrGetDsfNoStats.restype = c_char_p
-lib.mdAddrGetDsfDNA.argtypes = [c_void_p]
-lib.mdAddrGetDsfDNA.restype = c_char_p
+if os.environ['DQS_VERSION'] >= 'dqs.202106':
+  # GetDsfDNA fails prior to dqs.202106.
+  #   AttributeError: /melissa_data/dqs.202105/address/linux/gcc41_64bit/libmdAddr.so: undefined symbol:
+  #   mdAddrGetDsfDNA. Did you mean: 'mdAddrGetMsa'?
+  lib.mdAddrGetDsfDNA.argtypes = [c_void_p]
+  lib.mdAddrGetDsfDNA.restype = c_char_p
 lib.mdAddrGetPS3553_B6_TotalRecords.argtypes = [c_void_p]
 lib.mdAddrGetPS3553_B6_TotalRecords.restype = c_int
 lib.mdAddrGetPS3553_C1a_ZIP4Coded.argtypes = [c_void_p]
@@ -422,8 +429,12 @@ lib.mdParseGetLockBox.argtypes = [c_void_p]
 lib.mdParseGetLockBox.restype = c_char_p
 lib.mdParseGetDeliveryInstallation.argtypes = [c_void_p]
 lib.mdParseGetDeliveryInstallation.restype = c_char_p
-lib.mdParseParseRule.argtypes = [c_void_p]
-lib.mdParseParseRule.restype = c_int
+if os.environ['DQS_VERSION'] >= 'dqs.202306':
+  # This errors prior to dqs.202306.
+  #   AttributeError: /melissa_data/dqs.202305/address/linux/gcc48_64bit/libmdAddr.so: undefined symbol:
+  #   mdParseParseRule. Did you mean: 'mdParseParse'?
+  lib.mdParseParseRule.argtypes = [c_void_p]
+  lib.mdParseParseRule.restype = c_int
 
 lib.mdStreetCreate.argtypes = []
 lib.mdStreetCreate.restype = c_void_p
