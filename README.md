@@ -3,7 +3,7 @@
 ## Purpose
 
 This is the code for you to run Address Object in Python3.
-    
+
 Please feel free to copy or embed this code to your own project. Happy coding!
 
 For latest Melissa Address Object release notes, please visit: https://releasenotes.melissa.com/on-premise-api/address-object/
@@ -37,7 +37,7 @@ import mdAddr_pythoncode
 
 - [Melissa - Address Object Windows Python3](https://github.com/MelissaData/AddressObject-Python3)
 - [Melissa - Address Object Linux Python3](https://github.com/MelissaData/AddressObject-Python3-Linux)
-    
+
 ## Contact Us
 
 For free technical support, please call us at 800-MELISSA ext. 4

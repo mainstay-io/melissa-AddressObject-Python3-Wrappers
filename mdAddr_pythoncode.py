@@ -263,18 +263,25 @@ lib.mdAddrGetMelissaAddressKey.argtypes = [c_void_p]
 lib.mdAddrGetMelissaAddressKey.restype = c_char_p
 lib.mdAddrGetMelissaAddressKeyBase.argtypes = [c_void_p]
 lib.mdAddrGetMelissaAddressKeyBase.restype = c_char_p
-lib.mdAddrGetOutputParameter.argtypes = [c_void_p, c_char_p]
-lib.mdAddrGetOutputParameter.restype = c_char_p
-lib.mdAddrSetInputParameter.argtypes = [c_void_p, c_char_p, c_char_p]
-lib.mdAddrSetInputParameter.restype = c_int
+if os.environ['DQS_VERSION'] >= 'dqs.202306':
+  # GetOutputParameter is new in dqs.202306
+  # https://releasenotes.melissa.com/on-premise-api/address-object/#202306
+  lib.mdAddrGetOutputParameter.argtypes = [c_void_p, c_char_p]
+  lib.mdAddrGetOutputParameter.restype = c_char_p
+  lib.mdAddrSetInputParameter.argtypes = [c_void_p, c_char_p, c_char_p]
+  lib.mdAddrSetInputParameter.restype = c_int
 lib.mdAddrFindSuggestion.argtypes = [c_void_p]
 lib.mdAddrFindSuggestion.restype = c_bool
 lib.mdAddrFindSuggestionNext.argtypes = [c_void_p]
 lib.mdAddrFindSuggestionNext.restype = c_bool
 lib.mdAddrGetDsfNoStats.argtypes = [c_void_p]
 lib.mdAddrGetDsfNoStats.restype = c_char_p
-lib.mdAddrGetDsfDNA.argtypes = [c_void_p]
-lib.mdAddrGetDsfDNA.restype = c_char_p
+if os.environ['DQS_VERSION'] >= 'dqs.202106':
+  # GetDsfDNA fails prior to dqs.202106.
+  #   AttributeError: /melissa_data/dqs.202105/address/linux/gcc41_64bit/libmdAddr.so: undefined symbol:
+  #   mdAddrGetDsfDNA. Did you mean: 'mdAddrGetMsa'?
+  lib.mdAddrGetDsfDNA.argtypes = [c_void_p]
+  lib.mdAddrGetDsfDNA.restype = c_char_p
 lib.mdAddrGetPS3553_B6_TotalRecords.argtypes = [c_void_p]
 lib.mdAddrGetPS3553_B6_TotalRecords.restype = c_int
 lib.mdAddrGetPS3553_C1a_ZIP4Coded.argtypes = [c_void_p]
@@ -422,8 +429,12 @@ lib.mdParseGetLockBox.argtypes = [c_void_p]
 lib.mdParseGetLockBox.restype = c_char_p
 lib.mdParseGetDeliveryInstallation.argtypes = [c_void_p]
 lib.mdParseGetDeliveryInstallation.restype = c_char_p
-lib.mdParseParseRule.argtypes = [c_void_p]
-lib.mdParseParseRule.restype = c_int
+if os.environ['DQS_VERSION'] >= 'dqs.202306':
+  # This errors prior to dqs.202306.
+  #   AttributeError: /melissa_data/dqs.202305/address/linux/gcc48_64bit/libmdAddr.so: undefined symbol:
+  #   mdParseParseRule. Did you mean: 'mdParseParse'?
+  lib.mdParseParseRule.argtypes = [c_void_p]
+  lib.mdParseParseRule.restype = c_int
 
 lib.mdStreetCreate.argtypes = []
 lib.mdStreetCreate.restype = c_void_p
@@ -583,1035 +594,1043 @@ lib.mdZipGetFinanceNumber.restype = c_char_p
 
 # mdAddr Enumerations
 class ProgramStatus(Enum):
-	ErrorNone = 0
-	ErrorOther = 1
-	ErrorOutOfMemory = 2
-	ErrorRequiredFileNotFound = 3
-	ErrorFoundOldFile = 4
-	ErrorDatabaseExpired = 5
-	ErrorLicenseExpired = 6
+  ErrorNone = 0
+  ErrorOther = 1
+  ErrorOutOfMemory = 2
+  ErrorRequiredFileNotFound = 3
+  ErrorFoundOldFile = 4
+  ErrorDatabaseExpired = 5
+  ErrorLicenseExpired = 6
 
 class AccessType(Enum):
-	Local = 0
-	Remote = 1
+  Local = 0
+  Remote = 1
 
 class DiacriticsMode(Enum):
-	Auto = 0
-	On = 1
-	Off = 2
+  Auto = 0
+  On = 1
+  Off = 2
 
 class StandardizeMode(Enum):
-	ShortFormat = 0
-	LongFormat = 1
-	AutoFormat = 2
+  ShortFormat = 0
+  LongFormat = 1
+  AutoFormat = 2
 
 class SuiteParseMode(Enum):
-	ParseSuite = 0
-	CombineSuite = 1
+  ParseSuite = 0
+  CombineSuite = 1
 
 class AliasPreserveMode(Enum):
-	ConvertAlias = 0
-	PreserveAlias = 1
+  ConvertAlias = 0
+  PreserveAlias = 1
 
 class AutoCompletionMode(Enum):
-	AutoCompleteSingleSuite = 0
-	AutoCompleteRangedSuite = 1
-	AutoCompletePlaceHolderSuite = 2
-	AutoCompleteNoSuite = 3
+  AutoCompleteSingleSuite = 0
+  AutoCompleteRangedSuite = 1
+  AutoCompletePlaceHolderSuite = 2
+  AutoCompleteNoSuite = 3
 
 class ResultCdDescOpt(Enum):
-	ResultCodeDescriptionLong = 0
-	ResultCodeDescriptionShort = 1
+  ResultCodeDescriptionLong = 0
+  ResultCodeDescriptionShort = 1
 
 class MailboxLookupMode(Enum):
-	MailboxNone = 0
-	MailboxExpress = 1
-	MailboxPremium = 2
+  MailboxNone = 0
+  MailboxExpress = 1
+  MailboxPremium = 2
 
 class mdAddr(object):
-	def __init__(self):
-		self.I = lib.mdAddrCreate()
+  def __init__(self, encoding, errors):
+    self.encoding = encoding
+    self.errors = errors
+    self.I = lib.mdAddrCreate()
 
-	def __del__(self):
-		lib.mdAddrDestroy(self.I)
+  def __del__(self):
+    lib.mdAddrDestroy(self.I)
 
-	def Initialize(self, p1, p2, p3):
-		return ProgramStatus(lib.mdAddrInitialize(self.I, p1.encode('utf-8'), p2.encode('utf-8'), p3.encode('utf-8')))
+  def Initialize(self, p1, p2, p3):
+    return ProgramStatus(lib.mdAddrInitialize(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors), p3.encode(self.encoding, errors=self.errors)))
 
-	def InitializeDataFiles(self):
-		return ProgramStatus(lib.mdAddrInitializeDataFiles(self.I))
+  def InitializeDataFiles(self):
+    return ProgramStatus(lib.mdAddrInitializeDataFiles(self.I))
 
-	def GetInitializeErrorString(self):
-		return lib.mdAddrGetInitializeErrorString(self.I).decode('utf-8')
+  def GetInitializeErrorString(self):
+    return lib.mdAddrGetInitializeErrorString(self.I).decode(self.encoding)
 
-	def SetLicenseString(self, p1):
-		return lib.mdAddrSetLicenseString(self.I, p1.encode('utf-8'))
+  def SetLicenseString(self, p1):
+    return lib.mdAddrSetLicenseString(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def GetBuildNumber(self):
-		return lib.mdAddrGetBuildNumber(self.I).decode('utf-8')
+  def GetBuildNumber(self):
+    return lib.mdAddrGetBuildNumber(self.I).decode(self.encoding)
 
-	def GetDatabaseDate(self):
-		return lib.mdAddrGetDatabaseDate(self.I).decode('utf-8')
+  def GetDatabaseDate(self):
+    return lib.mdAddrGetDatabaseDate(self.I).decode(self.encoding)
 
-	def GetExpirationDate(self):
-		return lib.mdAddrGetExpirationDate(self.I).decode('utf-8')
+  def GetExpirationDate(self):
+    return lib.mdAddrGetExpirationDate(self.I).decode(self.encoding)
 
-	def GetLicenseExpirationDate(self):
-		return lib.mdAddrGetLicenseExpirationDate(self.I).decode('utf-8')
+  def GetLicenseExpirationDate(self):
+    return lib.mdAddrGetLicenseExpirationDate(self.I).decode(self.encoding)
 
-	def GetCanadianDatabaseDate(self):
-		return lib.mdAddrGetCanadianDatabaseDate(self.I).decode('utf-8')
+  def GetCanadianDatabaseDate(self):
+    return lib.mdAddrGetCanadianDatabaseDate(self.I).decode(self.encoding)
 
-	def GetCanadianExpirationDate(self):
-		return lib.mdAddrGetCanadianExpirationDate(self.I).decode('utf-8')
+  def GetCanadianExpirationDate(self):
+    return lib.mdAddrGetCanadianExpirationDate(self.I).decode(self.encoding)
 
-	def SetPathToUSFiles(self, p1):
-		lib.mdAddrSetPathToUSFiles(self.I, p1.encode('utf-8'))
+  def SetPathToUSFiles(self, p1):
+    lib.mdAddrSetPathToUSFiles(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPathToCanadaFiles(self, p1):
-		lib.mdAddrSetPathToCanadaFiles(self.I, p1.encode('utf-8'))
+  def SetPathToCanadaFiles(self, p1):
+    lib.mdAddrSetPathToCanadaFiles(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPathToDPVDataFiles(self, p1):
-		lib.mdAddrSetPathToDPVDataFiles(self.I, p1.encode('utf-8'))
+  def SetPathToDPVDataFiles(self, p1):
+    lib.mdAddrSetPathToDPVDataFiles(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPathToLACSLinkDataFiles(self, p1):
-		lib.mdAddrSetPathToLACSLinkDataFiles(self.I, p1.encode('utf-8'))
+  def SetPathToLACSLinkDataFiles(self, p1):
+    lib.mdAddrSetPathToLACSLinkDataFiles(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPathToSuiteLinkDataFiles(self, p1):
-		lib.mdAddrSetPathToSuiteLinkDataFiles(self.I, p1.encode('utf-8'))
+  def SetPathToSuiteLinkDataFiles(self, p1):
+    lib.mdAddrSetPathToSuiteLinkDataFiles(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPathToSuiteFinderDataFiles(self, p1):
-		lib.mdAddrSetPathToSuiteFinderDataFiles(self.I, p1.encode('utf-8'))
+  def SetPathToSuiteFinderDataFiles(self, p1):
+    lib.mdAddrSetPathToSuiteFinderDataFiles(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPathToRBDIFiles(self, p1):
-		lib.mdAddrSetPathToRBDIFiles(self.I, p1.encode('utf-8'))
+  def SetPathToRBDIFiles(self, p1):
+    lib.mdAddrSetPathToRBDIFiles(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def GetRBDIDatabaseDate(self):
-		return lib.mdAddrGetRBDIDatabaseDate(self.I).decode('utf-8')
+  def GetRBDIDatabaseDate(self):
+    return lib.mdAddrGetRBDIDatabaseDate(self.I).decode(self.encoding)
 
-	def SetPathToAddrKeyDataFiles(self, p1):
-		lib.mdAddrSetPathToAddrKeyDataFiles(self.I, p1.encode('utf-8'))
+  def SetPathToAddrKeyDataFiles(self, p1):
+    lib.mdAddrSetPathToAddrKeyDataFiles(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def ClearProperties(self):
-		lib.mdAddrClearProperties(self.I)
+  def ClearProperties(self):
+    lib.mdAddrClearProperties(self.I)
 
-	def ResetDPV(self):
-		lib.mdAddrResetDPV(self.I)
+  def ResetDPV(self):
+    lib.mdAddrResetDPV(self.I)
 
-	def SetCASSEnable(self, p1):
-		lib.mdAddrSetCASSEnable(self.I, p1)
+  def SetCASSEnable(self, p1):
+    lib.mdAddrSetCASSEnable(self.I, p1)
 
-	def SetUseUSPSPreferredCityNames(self, p1):
-		lib.mdAddrSetUseUSPSPreferredCityNames(self.I, p1)
+  def SetUseUSPSPreferredCityNames(self, p1):
+    lib.mdAddrSetUseUSPSPreferredCityNames(self.I, p1)
 
-	def SetDiacritics(self, p1):
-		lib.mdAddrSetDiacritics(self.I, DiacriticsMode(p1).value)
+  def SetDiacritics(self, p1):
+    lib.mdAddrSetDiacritics(self.I, DiacriticsMode(p1).value)
 
-	def GetStatusCode(self):
-		return lib.mdAddrGetStatusCode(self.I).decode('utf-8')
+  def GetStatusCode(self):
+    return lib.mdAddrGetStatusCode(self.I).decode(self.encoding)
 
-	def GetErrorCode(self):
-		return lib.mdAddrGetErrorCode(self.I).decode('utf-8')
+  def GetErrorCode(self):
+    return lib.mdAddrGetErrorCode(self.I).decode(self.encoding)
 
-	def GetErrorString(self):
-		return lib.mdAddrGetErrorString(self.I).decode('utf-8')
+  def GetErrorString(self):
+    return lib.mdAddrGetErrorString(self.I).decode(self.encoding)
 
-	def GetResults(self):
-		return lib.mdAddrGetResults(self.I).decode('utf-8')
+  def GetResults(self):
+    return lib.mdAddrGetResults(self.I).decode(self.encoding)
 
-	def GetResultCodeDescription(self, resultCode, opt=0):
-		return lib.mdAddrGetResultCodeDescription(self.I, resultCode.encode('utf-8'), ResultCdDescOpt(opt).value).decode('utf-8')
+  def GetResultCodeDescription(self, resultCode, opt=0):
+    return lib.mdAddrGetResultCodeDescription(self.I, resultCode.encode(self.encoding, errors=self.errors), ResultCdDescOpt(opt).value).decode(self.encoding)
 
-	def SetPS3553_B1_ProcessorName(self, p1):
-		lib.mdAddrSetPS3553_B1_ProcessorName(self.I, p1.encode('utf-8'))
+  def SetPS3553_B1_ProcessorName(self, p1):
+    lib.mdAddrSetPS3553_B1_ProcessorName(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPS3553_B4_ListName(self, p1):
-		lib.mdAddrSetPS3553_B4_ListName(self.I, p1.encode('utf-8'))
+  def SetPS3553_B4_ListName(self, p1):
+    lib.mdAddrSetPS3553_B4_ListName(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPS3553_D3_Name(self, p1):
-		lib.mdAddrSetPS3553_D3_Name(self.I, p1.encode('utf-8'))
+  def SetPS3553_D3_Name(self, p1):
+    lib.mdAddrSetPS3553_D3_Name(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPS3553_D3_Company(self, p1):
-		lib.mdAddrSetPS3553_D3_Company(self.I, p1.encode('utf-8'))
+  def SetPS3553_D3_Company(self, p1):
+    lib.mdAddrSetPS3553_D3_Company(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPS3553_D3_Address(self, p1):
-		lib.mdAddrSetPS3553_D3_Address(self.I, p1.encode('utf-8'))
+  def SetPS3553_D3_Address(self, p1):
+    lib.mdAddrSetPS3553_D3_Address(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPS3553_D3_City(self, p1):
-		lib.mdAddrSetPS3553_D3_City(self.I, p1.encode('utf-8'))
+  def SetPS3553_D3_City(self, p1):
+    lib.mdAddrSetPS3553_D3_City(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPS3553_D3_State(self, p1):
-		lib.mdAddrSetPS3553_D3_State(self.I, p1.encode('utf-8'))
+  def SetPS3553_D3_State(self, p1):
+    lib.mdAddrSetPS3553_D3_State(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPS3553_D3_ZIP(self, p1):
-		lib.mdAddrSetPS3553_D3_ZIP(self.I, p1.encode('utf-8'))
+  def SetPS3553_D3_ZIP(self, p1):
+    lib.mdAddrSetPS3553_D3_ZIP(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def GetFormPS3553(self):
-		return lib.mdAddrGetFormPS3553(self.I).decode('utf-8')
+  def GetFormPS3553(self):
+    return lib.mdAddrGetFormPS3553(self.I).decode(self.encoding)
 
-	def SaveFormPS3553(self, p1):
-		return lib.mdAddrSaveFormPS3553(self.I, p1.encode('utf-8'))
+  def SaveFormPS3553(self, p1):
+    return lib.mdAddrSaveFormPS3553(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def ResetFormPS3553(self):
-		lib.mdAddrResetFormPS3553(self.I)
+  def ResetFormPS3553(self):
+    lib.mdAddrResetFormPS3553(self.I)
 
-	def ResetFormPS3553Counter(self):
-		lib.mdAddrResetFormPS3553Counter(self.I)
+  def ResetFormPS3553Counter(self):
+    lib.mdAddrResetFormPS3553Counter(self.I)
 
-	def SetStandardizationType(self, mode):
-		lib.mdAddrSetStandardizationType(self.I, StandardizeMode(mode).value)
+  def SetStandardizationType(self, mode):
+    lib.mdAddrSetStandardizationType(self.I, StandardizeMode(mode).value)
 
-	def SetSuiteParseMode(self, mode):
-		lib.mdAddrSetSuiteParseMode(self.I, SuiteParseMode(mode).value)
+  def SetSuiteParseMode(self, mode):
+    lib.mdAddrSetSuiteParseMode(self.I, SuiteParseMode(mode).value)
 
-	def SetAliasMode(self, mode):
-		lib.mdAddrSetAliasMode(self.I, AliasPreserveMode(mode).value)
+  def SetAliasMode(self, mode):
+    lib.mdAddrSetAliasMode(self.I, AliasPreserveMode(mode).value)
 
-	def GetFormSOA(self):
-		return lib.mdAddrGetFormSOA(self.I).decode('utf-8')
+  def GetFormSOA(self):
+    return lib.mdAddrGetFormSOA(self.I).decode(self.encoding)
 
-	def SaveFormSOA(self, p1):
-		lib.mdAddrSaveFormSOA(self.I, p1.encode('utf-8'))
+  def SaveFormSOA(self, p1):
+    lib.mdAddrSaveFormSOA(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def ResetFormSOA(self):
-		lib.mdAddrResetFormSOA(self.I)
+  def ResetFormSOA(self):
+    lib.mdAddrResetFormSOA(self.I)
 
-	def SetSOACustomerInfo(self, customerName, customerAddress):
-		lib.mdAddrSetSOACustomerInfo(self.I, customerName.encode('utf-8'), customerAddress.encode('utf-8'))
+  def SetSOACustomerInfo(self, customerName, customerAddress):
+    lib.mdAddrSetSOACustomerInfo(self.I, customerName.encode(self.encoding, errors=self.errors), customerAddress.encode(self.encoding, errors=self.errors))
 
-	def SetSOACPCNumber(self, CPCNumber):
-		lib.mdAddrSetSOACPCNumber(self.I, CPCNumber.encode('utf-8'))
+  def SetSOACPCNumber(self, CPCNumber):
+    lib.mdAddrSetSOACPCNumber(self.I, CPCNumber.encode(self.encoding, errors=self.errors))
 
-	def GetSOACustomerInfo(self):
-		return lib.mdAddrGetSOACustomerInfo(self.I).decode('utf-8')
+  def GetSOACustomerInfo(self):
+    return lib.mdAddrGetSOACustomerInfo(self.I).decode(self.encoding)
 
-	def GetSOACPCNumber(self):
-		return lib.mdAddrGetSOACPCNumber(self.I).decode('utf-8')
+  def GetSOACPCNumber(self):
+    return lib.mdAddrGetSOACPCNumber(self.I).decode(self.encoding)
 
-	def GetSOATotalRecords(self):
-		return lib.mdAddrGetSOATotalRecords(self.I)
+  def GetSOATotalRecords(self):
+    return lib.mdAddrGetSOATotalRecords(self.I)
 
-	def GetSOAAAPercentage(self):
-		return lib.mdAddrGetSOAAAPercentage(self.I)
+  def GetSOAAAPercentage(self):
+    return lib.mdAddrGetSOAAAPercentage(self.I)
 
-	def GetSOAAAExpiryDate(self):
-		return lib.mdAddrGetSOAAAExpiryDate(self.I).decode('utf-8')
+  def GetSOAAAExpiryDate(self):
+    return lib.mdAddrGetSOAAAExpiryDate(self.I).decode(self.encoding)
 
-	def GetSOASoftwareInfo(self):
-		return lib.mdAddrGetSOASoftwareInfo(self.I).decode('utf-8')
+  def GetSOASoftwareInfo(self):
+    return lib.mdAddrGetSOASoftwareInfo(self.I).decode(self.encoding)
 
-	def GetSOAErrorString(self):
-		return lib.mdAddrGetSOAErrorString(self.I).decode('utf-8')
+  def GetSOAErrorString(self):
+    return lib.mdAddrGetSOAErrorString(self.I).decode(self.encoding)
 
-	def SetCompany(self, p1):
-		lib.mdAddrSetCompany(self.I, p1.encode('utf-8'))
+  def SetCompany(self, p1):
+    lib.mdAddrSetCompany(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetLastName(self, p1):
-		lib.mdAddrSetLastName(self.I, p1.encode('utf-8'))
+  def SetLastName(self, p1):
+    lib.mdAddrSetLastName(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetAddress(self, p1):
-		lib.mdAddrSetAddress(self.I, p1.encode('utf-8'))
+  def SetAddress(self, p1):
+    lib.mdAddrSetAddress(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetAddress2(self, p1):
-		lib.mdAddrSetAddress2(self.I, p1.encode('utf-8'))
+  def SetAddress2(self, p1):
+    lib.mdAddrSetAddress2(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetLastLine(self, p1):
-		lib.mdAddrSetLastLine(self.I, p1.encode('utf-8'))
+  def SetLastLine(self, p1):
+    lib.mdAddrSetLastLine(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetSuite(self, p1):
-		lib.mdAddrSetSuite(self.I, p1.encode('utf-8'))
+  def SetSuite(self, p1):
+    lib.mdAddrSetSuite(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetCity(self, p1):
-		lib.mdAddrSetCity(self.I, p1.encode('utf-8'))
+  def SetCity(self, p1):
+    lib.mdAddrSetCity(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetState(self, p1):
-		lib.mdAddrSetState(self.I, p1.encode('utf-8'))
+  def SetState(self, p1):
+    lib.mdAddrSetState(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetZip(self, p1):
-		lib.mdAddrSetZip(self.I, p1.encode('utf-8'))
+  def SetZip(self, p1):
+    lib.mdAddrSetZip(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetPlus4(self, p1):
-		lib.mdAddrSetPlus4(self.I, p1.encode('utf-8'))
+  def SetPlus4(self, p1):
+    lib.mdAddrSetPlus4(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetUrbanization(self, p1):
-		lib.mdAddrSetUrbanization(self.I, p1.encode('utf-8'))
+  def SetUrbanization(self, p1):
+    lib.mdAddrSetUrbanization(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedAddressRange(self, p1):
-		lib.mdAddrSetParsedAddressRange(self.I, p1.encode('utf-8'))
+  def SetParsedAddressRange(self, p1):
+    lib.mdAddrSetParsedAddressRange(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedPreDirection(self, p1):
-		lib.mdAddrSetParsedPreDirection(self.I, p1.encode('utf-8'))
+  def SetParsedPreDirection(self, p1):
+    lib.mdAddrSetParsedPreDirection(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedStreetName(self, p1):
-		lib.mdAddrSetParsedStreetName(self.I, p1.encode('utf-8'))
+  def SetParsedStreetName(self, p1):
+    lib.mdAddrSetParsedStreetName(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedSuffix(self, p1):
-		lib.mdAddrSetParsedSuffix(self.I, p1.encode('utf-8'))
+  def SetParsedSuffix(self, p1):
+    lib.mdAddrSetParsedSuffix(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedPostDirection(self, p1):
-		lib.mdAddrSetParsedPostDirection(self.I, p1.encode('utf-8'))
+  def SetParsedPostDirection(self, p1):
+    lib.mdAddrSetParsedPostDirection(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedSuiteName(self, p1):
-		lib.mdAddrSetParsedSuiteName(self.I, p1.encode('utf-8'))
+  def SetParsedSuiteName(self, p1):
+    lib.mdAddrSetParsedSuiteName(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedSuiteRange(self, p1):
-		lib.mdAddrSetParsedSuiteRange(self.I, p1.encode('utf-8'))
+  def SetParsedSuiteRange(self, p1):
+    lib.mdAddrSetParsedSuiteRange(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedRouteService(self, p1):
-		lib.mdAddrSetParsedRouteService(self.I, p1.encode('utf-8'))
+  def SetParsedRouteService(self, p1):
+    lib.mdAddrSetParsedRouteService(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedLockBox(self, p1):
-		lib.mdAddrSetParsedLockBox(self.I, p1.encode('utf-8'))
+  def SetParsedLockBox(self, p1):
+    lib.mdAddrSetParsedLockBox(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetParsedDeliveryInstallation(self, p1):
-		lib.mdAddrSetParsedDeliveryInstallation(self.I, p1.encode('utf-8'))
+  def SetParsedDeliveryInstallation(self, p1):
+    lib.mdAddrSetParsedDeliveryInstallation(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def SetCountryCode(self, p1):
-		lib.mdAddrSetCountryCode(self.I, p1.encode('utf-8'))
+  def SetCountryCode(self, p1):
+    lib.mdAddrSetCountryCode(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def VerifyAddress(self):
-		return lib.mdAddrVerifyAddress(self.I)
+  def VerifyAddress(self):
+    return lib.mdAddrVerifyAddress(self.I)
 
-	def GetCompany(self):
-		return lib.mdAddrGetCompany(self.I).decode('utf-8')
+  def GetCompany(self):
+    return lib.mdAddrGetCompany(self.I).decode(self.encoding)
 
-	def GetLastName(self):
-		return lib.mdAddrGetLastName(self.I).decode('utf-8')
+  def GetLastName(self):
+    return lib.mdAddrGetLastName(self.I).decode(self.encoding)
 
-	def GetAddress(self):
-		return lib.mdAddrGetAddress(self.I).decode('utf-8')
+  def GetAddress(self):
+    return lib.mdAddrGetAddress(self.I).decode(self.encoding)
 
-	def GetAddress2(self):
-		return lib.mdAddrGetAddress2(self.I).decode('utf-8')
+  def GetAddress2(self):
+    return lib.mdAddrGetAddress2(self.I).decode(self.encoding)
 
-	def GetSuite(self):
-		return lib.mdAddrGetSuite(self.I).decode('utf-8')
+  def GetSuite(self):
+    return lib.mdAddrGetSuite(self.I).decode(self.encoding)
 
-	def GetCity(self):
-		return lib.mdAddrGetCity(self.I).decode('utf-8')
+  def GetCity(self):
+    return lib.mdAddrGetCity(self.I).decode(self.encoding)
 
-	def GetCityAbbreviation(self):
-		return lib.mdAddrGetCityAbbreviation(self.I).decode('utf-8')
+  def GetCityAbbreviation(self):
+    return lib.mdAddrGetCityAbbreviation(self.I).decode(self.encoding)
 
-	def GetState(self):
-		return lib.mdAddrGetState(self.I).decode('utf-8')
+  def GetState(self):
+    return lib.mdAddrGetState(self.I).decode(self.encoding)
 
-	def GetZip(self):
-		return lib.mdAddrGetZip(self.I).decode('utf-8')
+  def GetZip(self):
+    return lib.mdAddrGetZip(self.I).decode(self.encoding)
 
-	def GetPlus4(self):
-		return lib.mdAddrGetPlus4(self.I).decode('utf-8')
+  def GetPlus4(self):
+    return lib.mdAddrGetPlus4(self.I).decode(self.encoding)
 
-	def GetCarrierRoute(self):
-		return lib.mdAddrGetCarrierRoute(self.I).decode('utf-8')
+  def GetCarrierRoute(self):
+    return lib.mdAddrGetCarrierRoute(self.I).decode(self.encoding)
 
-	def GetDeliveryPointCode(self):
-		return lib.mdAddrGetDeliveryPointCode(self.I).decode('utf-8')
+  def GetDeliveryPointCode(self):
+    return lib.mdAddrGetDeliveryPointCode(self.I).decode(self.encoding)
 
-	def GetDeliveryPointCheckDigit(self):
-		return lib.mdAddrGetDeliveryPointCheckDigit(self.I).decode('utf-8')
+  def GetDeliveryPointCheckDigit(self):
+    return lib.mdAddrGetDeliveryPointCheckDigit(self.I).decode(self.encoding)
 
-	def GetCountyFips(self):
-		return lib.mdAddrGetCountyFips(self.I).decode('utf-8')
+  def GetCountyFips(self):
+    return lib.mdAddrGetCountyFips(self.I).decode(self.encoding)
 
-	def GetCountyName(self):
-		return lib.mdAddrGetCountyName(self.I).decode('utf-8')
+  def GetCountyName(self):
+    return lib.mdAddrGetCountyName(self.I).decode(self.encoding)
 
-	def GetAddressTypeCode(self):
-		return lib.mdAddrGetAddressTypeCode(self.I).decode('utf-8')
+  def GetAddressTypeCode(self):
+    return lib.mdAddrGetAddressTypeCode(self.I).decode(self.encoding)
 
-	def GetAddressTypeString(self):
-		return lib.mdAddrGetAddressTypeString(self.I).decode('utf-8')
+  def GetAddressTypeString(self):
+    return lib.mdAddrGetAddressTypeString(self.I).decode(self.encoding)
 
-	def GetUrbanization(self):
-		return lib.mdAddrGetUrbanization(self.I).decode('utf-8')
+  def GetUrbanization(self):
+    return lib.mdAddrGetUrbanization(self.I).decode(self.encoding)
 
-	def GetCongressionalDistrict(self):
-		return lib.mdAddrGetCongressionalDistrict(self.I).decode('utf-8')
+  def GetCongressionalDistrict(self):
+    return lib.mdAddrGetCongressionalDistrict(self.I).decode(self.encoding)
 
-	def GetLACS(self):
-		return lib.mdAddrGetLACS(self.I).decode('utf-8')
+  def GetLACS(self):
+    return lib.mdAddrGetLACS(self.I).decode(self.encoding)
 
-	def GetLACSLinkIndicator(self):
-		return lib.mdAddrGetLACSLinkIndicator(self.I).decode('utf-8')
+  def GetLACSLinkIndicator(self):
+    return lib.mdAddrGetLACSLinkIndicator(self.I).decode(self.encoding)
 
-	def GetPrivateMailbox(self):
-		return lib.mdAddrGetPrivateMailbox(self.I).decode('utf-8')
+  def GetPrivateMailbox(self):
+    return lib.mdAddrGetPrivateMailbox(self.I).decode(self.encoding)
 
-	def GetTimeZoneCode(self):
-		return lib.mdAddrGetTimeZoneCode(self.I).decode('utf-8')
+  def GetTimeZoneCode(self):
+    return lib.mdAddrGetTimeZoneCode(self.I).decode(self.encoding)
 
-	def GetTimeZone(self):
-		return lib.mdAddrGetTimeZone(self.I).decode('utf-8')
+  def GetTimeZone(self):
+    return lib.mdAddrGetTimeZone(self.I).decode(self.encoding)
 
-	def GetMsa(self):
-		return lib.mdAddrGetMsa(self.I).decode('utf-8')
+  def GetMsa(self):
+    return lib.mdAddrGetMsa(self.I).decode(self.encoding)
 
-	def GetPmsa(self):
-		return lib.mdAddrGetPmsa(self.I).decode('utf-8')
+  def GetPmsa(self):
+    return lib.mdAddrGetPmsa(self.I).decode(self.encoding)
 
-	def GetDefaultFlagIndicator(self):
-		return lib.mdAddrGetDefaultFlagIndicator(self.I).decode('utf-8')
+  def GetDefaultFlagIndicator(self):
+    return lib.mdAddrGetDefaultFlagIndicator(self.I).decode(self.encoding)
 
-	def GetSuiteStatus(self):
-		return lib.mdAddrGetSuiteStatus(self.I).decode('utf-8')
+  def GetSuiteStatus(self):
+    return lib.mdAddrGetSuiteStatus(self.I).decode(self.encoding)
 
-	def GetEWSFlag(self):
-		return lib.mdAddrGetEWSFlag(self.I).decode('utf-8')
+  def GetEWSFlag(self):
+    return lib.mdAddrGetEWSFlag(self.I).decode(self.encoding)
 
-	def GetCMRA(self):
-		return lib.mdAddrGetCMRA(self.I).decode('utf-8')
+  def GetCMRA(self):
+    return lib.mdAddrGetCMRA(self.I).decode(self.encoding)
 
-	def GetDsfVacant(self):
-		return lib.mdAddrGetDsfVacant(self.I).decode('utf-8')
+  def GetDsfVacant(self):
+    return lib.mdAddrGetDsfVacant(self.I).decode(self.encoding)
 
-	def GetCountryCode(self):
-		return lib.mdAddrGetCountryCode(self.I).decode('utf-8')
+  def GetCountryCode(self):
+    return lib.mdAddrGetCountryCode(self.I).decode(self.encoding)
 
-	def GetZipType(self):
-		return lib.mdAddrGetZipType(self.I).decode('utf-8')
+  def GetZipType(self):
+    return lib.mdAddrGetZipType(self.I).decode(self.encoding)
 
-	def GetFalseTable(self):
-		return lib.mdAddrGetFalseTable(self.I).decode('utf-8')
+  def GetFalseTable(self):
+    return lib.mdAddrGetFalseTable(self.I).decode(self.encoding)
 
-	def GetDPVFootnotes(self):
-		return lib.mdAddrGetDPVFootnotes(self.I).decode('utf-8')
+  def GetDPVFootnotes(self):
+    return lib.mdAddrGetDPVFootnotes(self.I).decode(self.encoding)
 
-	def GetLACSLinkReturnCode(self):
-		return lib.mdAddrGetLACSLinkReturnCode(self.I).decode('utf-8')
+  def GetLACSLinkReturnCode(self):
+    return lib.mdAddrGetLACSLinkReturnCode(self.I).decode(self.encoding)
 
-	def GetSuiteLinkReturnCode(self):
-		return lib.mdAddrGetSuiteLinkReturnCode(self.I).decode('utf-8')
+  def GetSuiteLinkReturnCode(self):
+    return lib.mdAddrGetSuiteLinkReturnCode(self.I).decode(self.encoding)
 
-	def GetRBDI(self):
-		return lib.mdAddrGetRBDI(self.I).decode('utf-8')
+  def GetRBDI(self):
+    return lib.mdAddrGetRBDI(self.I).decode(self.encoding)
 
-	def GetELotNumber(self):
-		return lib.mdAddrGetELotNumber(self.I).decode('utf-8')
+  def GetELotNumber(self):
+    return lib.mdAddrGetELotNumber(self.I).decode(self.encoding)
 
-	def GetELotOrder(self):
-		return lib.mdAddrGetELotOrder(self.I).decode('utf-8')
+  def GetELotOrder(self):
+    return lib.mdAddrGetELotOrder(self.I).decode(self.encoding)
 
-	def GetAddressKey(self):
-		return lib.mdAddrGetAddressKey(self.I).decode('utf-8')
+  def GetAddressKey(self):
+    return lib.mdAddrGetAddressKey(self.I).decode(self.encoding)
 
-	def GetMelissaAddressKey(self):
-		return lib.mdAddrGetMelissaAddressKey(self.I).decode('utf-8')
+  def GetMelissaAddressKey(self):
+    return lib.mdAddrGetMelissaAddressKey(self.I).decode(self.encoding)
 
-	def GetMelissaAddressKeyBase(self):
-		return lib.mdAddrGetMelissaAddressKeyBase(self.I).decode('utf-8')
+  def GetMelissaAddressKeyBase(self):
+    return lib.mdAddrGetMelissaAddressKeyBase(self.I).decode(self.encoding)
 
-	def GetOutputParameter(self, p1):
-		return lib.mdAddrGetOutputParameter(self.I, p1.encode('utf-8')).decode('utf-8')
+  def GetOutputParameter(self, p1):
+    return lib.mdAddrGetOutputParameter(self.I, p1.encode(self.encoding, errors=self.errors)).decode(self.encoding)
 
-	def SetInputParameter(self, p1, p2):
-		return lib.mdAddrSetInputParameter(self.I, p1.encode('utf-8'), p2.encode('utf-8'))
+  def SetInputParameter(self, p1, p2):
+    return lib.mdAddrSetInputParameter(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors))
 
-	def FindSuggestion(self):
-		return lib.mdAddrFindSuggestion(self.I)
+  def FindSuggestion(self):
+    return lib.mdAddrFindSuggestion(self.I)
 
-	def FindSuggestionNext(self):
-		return lib.mdAddrFindSuggestionNext(self.I)
+  def FindSuggestionNext(self):
+    return lib.mdAddrFindSuggestionNext(self.I)
 
-	def GetDsfNoStats(self):
-		return lib.mdAddrGetDsfNoStats(self.I).decode('utf-8')
+  def GetDsfNoStats(self):
+    return lib.mdAddrGetDsfNoStats(self.I).decode(self.encoding)
 
-	def GetDsfDNA(self):
-		return lib.mdAddrGetDsfDNA(self.I).decode('utf-8')
+  def GetDsfDNA(self):
+    return lib.mdAddrGetDsfDNA(self.I).decode(self.encoding)
 
-	def GetPS3553_B6_TotalRecords(self):
-		return lib.mdAddrGetPS3553_B6_TotalRecords(self.I)
+  def GetPS3553_B6_TotalRecords(self):
+    return lib.mdAddrGetPS3553_B6_TotalRecords(self.I)
 
-	def GetPS3553_C1a_ZIP4Coded(self):
-		return lib.mdAddrGetPS3553_C1a_ZIP4Coded(self.I)
+  def GetPS3553_C1a_ZIP4Coded(self):
+    return lib.mdAddrGetPS3553_C1a_ZIP4Coded(self.I)
 
-	def GetPS3553_C1c_DPBCAssigned(self):
-		return lib.mdAddrGetPS3553_C1c_DPBCAssigned(self.I)
+  def GetPS3553_C1c_DPBCAssigned(self):
+    return lib.mdAddrGetPS3553_C1c_DPBCAssigned(self.I)
 
-	def GetPS3553_C1d_FiveDigitCoded(self):
-		return lib.mdAddrGetPS3553_C1d_FiveDigitCoded(self.I)
+  def GetPS3553_C1d_FiveDigitCoded(self):
+    return lib.mdAddrGetPS3553_C1d_FiveDigitCoded(self.I)
 
-	def GetPS3553_C1e_CRRTCoded(self):
-		return lib.mdAddrGetPS3553_C1e_CRRTCoded(self.I)
+  def GetPS3553_C1e_CRRTCoded(self):
+    return lib.mdAddrGetPS3553_C1e_CRRTCoded(self.I)
 
-	def GetPS3553_C1f_eLOTAssigned(self):
-		return lib.mdAddrGetPS3553_C1f_eLOTAssigned(self.I)
+  def GetPS3553_C1f_eLOTAssigned(self):
+    return lib.mdAddrGetPS3553_C1f_eLOTAssigned(self.I)
 
-	def GetPS3553_E_HighRiseDefault(self):
-		return lib.mdAddrGetPS3553_E_HighRiseDefault(self.I)
+  def GetPS3553_E_HighRiseDefault(self):
+    return lib.mdAddrGetPS3553_E_HighRiseDefault(self.I)
 
-	def GetPS3553_E_HighRiseExact(self):
-		return lib.mdAddrGetPS3553_E_HighRiseExact(self.I)
+  def GetPS3553_E_HighRiseExact(self):
+    return lib.mdAddrGetPS3553_E_HighRiseExact(self.I)
 
-	def GetPS3553_E_RuralRouteDefault(self):
-		return lib.mdAddrGetPS3553_E_RuralRouteDefault(self.I)
+  def GetPS3553_E_RuralRouteDefault(self):
+    return lib.mdAddrGetPS3553_E_RuralRouteDefault(self.I)
 
-	def GetPS3553_E_RuralRouteExact(self):
-		return lib.mdAddrGetPS3553_E_RuralRouteExact(self.I)
+  def GetPS3553_E_RuralRouteExact(self):
+    return lib.mdAddrGetPS3553_E_RuralRouteExact(self.I)
 
-	def GetZip4HRDefault(self):
-		return lib.mdAddrGetZip4HRDefault(self.I)
+  def GetZip4HRDefault(self):
+    return lib.mdAddrGetZip4HRDefault(self.I)
 
-	def GetZip4HRExact(self):
-		return lib.mdAddrGetZip4HRExact(self.I)
+  def GetZip4HRExact(self):
+    return lib.mdAddrGetZip4HRExact(self.I)
 
-	def GetZip4RRDefault(self):
-		return lib.mdAddrGetZip4RRDefault(self.I)
+  def GetZip4RRDefault(self):
+    return lib.mdAddrGetZip4RRDefault(self.I)
 
-	def GetZip4RRExact(self):
-		return lib.mdAddrGetZip4RRExact(self.I)
+  def GetZip4RRExact(self):
+    return lib.mdAddrGetZip4RRExact(self.I)
 
-	def GetPS3553_E_LACSCount(self):
-		return lib.mdAddrGetPS3553_E_LACSCount(self.I)
+  def GetPS3553_E_LACSCount(self):
+    return lib.mdAddrGetPS3553_E_LACSCount(self.I)
 
-	def GetPS3553_E_EWSCount(self):
-		return lib.mdAddrGetPS3553_E_EWSCount(self.I)
+  def GetPS3553_E_EWSCount(self):
+    return lib.mdAddrGetPS3553_E_EWSCount(self.I)
 
-	def GetPS3553_E_DPVCount(self):
-		return lib.mdAddrGetPS3553_E_DPVCount(self.I)
+  def GetPS3553_E_DPVCount(self):
+    return lib.mdAddrGetPS3553_E_DPVCount(self.I)
 
-	def GetPS3553_X_POBoxCount(self):
-		return lib.mdAddrGetPS3553_X_POBoxCount(self.I)
+  def GetPS3553_X_POBoxCount(self):
+    return lib.mdAddrGetPS3553_X_POBoxCount(self.I)
 
-	def GetPS3553_X_HCExactCount(self):
-		return lib.mdAddrGetPS3553_X_HCExactCount(self.I)
+  def GetPS3553_X_HCExactCount(self):
+    return lib.mdAddrGetPS3553_X_HCExactCount(self.I)
 
-	def GetPS3553_X_FirmCount(self):
-		return lib.mdAddrGetPS3553_X_FirmCount(self.I)
+  def GetPS3553_X_FirmCount(self):
+    return lib.mdAddrGetPS3553_X_FirmCount(self.I)
 
-	def GetPS3553_X_GenDeliveryCount(self):
-		return lib.mdAddrGetPS3553_X_GenDeliveryCount(self.I)
+  def GetPS3553_X_GenDeliveryCount(self):
+    return lib.mdAddrGetPS3553_X_GenDeliveryCount(self.I)
 
-	def GetPS3553_X_MilitaryZipCount(self):
-		return lib.mdAddrGetPS3553_X_MilitaryZipCount(self.I)
+  def GetPS3553_X_MilitaryZipCount(self):
+    return lib.mdAddrGetPS3553_X_MilitaryZipCount(self.I)
 
-	def GetPS3553_X_NonDeliveryCount(self):
-		return lib.mdAddrGetPS3553_X_NonDeliveryCount(self.I)
+  def GetPS3553_X_NonDeliveryCount(self):
+    return lib.mdAddrGetPS3553_X_NonDeliveryCount(self.I)
 
-	def GetPS3553_X_StreetCount(self):
-		return lib.mdAddrGetPS3553_X_StreetCount(self.I)
+  def GetPS3553_X_StreetCount(self):
+    return lib.mdAddrGetPS3553_X_StreetCount(self.I)
 
-	def GetPS3553_X_HCDefaultCount(self):
-		return lib.mdAddrGetPS3553_X_HCDefaultCount(self.I)
+  def GetPS3553_X_HCDefaultCount(self):
+    return lib.mdAddrGetPS3553_X_HCDefaultCount(self.I)
 
-	def GetPS3553_X_OtherCount(self):
-		return lib.mdAddrGetPS3553_X_OtherCount(self.I)
+  def GetPS3553_X_OtherCount(self):
+    return lib.mdAddrGetPS3553_X_OtherCount(self.I)
 
-	def GetPS3553_X_LacsLinkCodeACount(self):
-		return lib.mdAddrGetPS3553_X_LacsLinkCodeACount(self.I)
+  def GetPS3553_X_LacsLinkCodeACount(self):
+    return lib.mdAddrGetPS3553_X_LacsLinkCodeACount(self.I)
 
-	def GetPS3553_X_LacsLinkCode00Count(self):
-		return lib.mdAddrGetPS3553_X_LacsLinkCode00Count(self.I)
+  def GetPS3553_X_LacsLinkCode00Count(self):
+    return lib.mdAddrGetPS3553_X_LacsLinkCode00Count(self.I)
 
-	def GetPS3553_X_LacsLinkCode14Count(self):
-		return lib.mdAddrGetPS3553_X_LacsLinkCode14Count(self.I)
+  def GetPS3553_X_LacsLinkCode14Count(self):
+    return lib.mdAddrGetPS3553_X_LacsLinkCode14Count(self.I)
 
-	def GetPS3553_X_LacsLinkCode92Count(self):
-		return lib.mdAddrGetPS3553_X_LacsLinkCode92Count(self.I)
+  def GetPS3553_X_LacsLinkCode92Count(self):
+    return lib.mdAddrGetPS3553_X_LacsLinkCode92Count(self.I)
 
-	def GetPS3553_X_LacsLinkCode09Count(self):
-		return lib.mdAddrGetPS3553_X_LacsLinkCode09Count(self.I)
+  def GetPS3553_X_LacsLinkCode09Count(self):
+    return lib.mdAddrGetPS3553_X_LacsLinkCode09Count(self.I)
 
-	def GetPS3553_X_SuiteLinkCodeACount(self):
-		return lib.mdAddrGetPS3553_X_SuiteLinkCodeACount(self.I)
+  def GetPS3553_X_SuiteLinkCodeACount(self):
+    return lib.mdAddrGetPS3553_X_SuiteLinkCodeACount(self.I)
 
-	def GetPS3553_X_SuiteLinkCode00Count(self):
-		return lib.mdAddrGetPS3553_X_SuiteLinkCode00Count(self.I)
+  def GetPS3553_X_SuiteLinkCode00Count(self):
+    return lib.mdAddrGetPS3553_X_SuiteLinkCode00Count(self.I)
 
-	def GetParsedAddressRange(self):
-		return lib.mdAddrGetParsedAddressRange(self.I).decode('utf-8')
+  def GetParsedAddressRange(self):
+    return lib.mdAddrGetParsedAddressRange(self.I).decode(self.encoding)
 
-	def GetParsedPreDirection(self):
-		return lib.mdAddrGetParsedPreDirection(self.I).decode('utf-8')
+  def GetParsedPreDirection(self):
+    return lib.mdAddrGetParsedPreDirection(self.I).decode(self.encoding)
 
-	def GetParsedStreetName(self):
-		return lib.mdAddrGetParsedStreetName(self.I).decode('utf-8')
+  def GetParsedStreetName(self):
+    return lib.mdAddrGetParsedStreetName(self.I).decode(self.encoding)
 
-	def GetParsedSuffix(self):
-		return lib.mdAddrGetParsedSuffix(self.I).decode('utf-8')
+  def GetParsedSuffix(self):
+    return lib.mdAddrGetParsedSuffix(self.I).decode(self.encoding)
 
-	def GetParsedPostDirection(self):
-		return lib.mdAddrGetParsedPostDirection(self.I).decode('utf-8')
+  def GetParsedPostDirection(self):
+    return lib.mdAddrGetParsedPostDirection(self.I).decode(self.encoding)
 
-	def GetParsedSuiteName(self):
-		return lib.mdAddrGetParsedSuiteName(self.I).decode('utf-8')
+  def GetParsedSuiteName(self):
+    return lib.mdAddrGetParsedSuiteName(self.I).decode(self.encoding)
 
-	def GetParsedSuiteRange(self):
-		return lib.mdAddrGetParsedSuiteRange(self.I).decode('utf-8')
+  def GetParsedSuiteRange(self):
+    return lib.mdAddrGetParsedSuiteRange(self.I).decode(self.encoding)
 
-	def GetParsedPrivateMailboxName(self):
-		return lib.mdAddrGetParsedPrivateMailboxName(self.I).decode('utf-8')
+  def GetParsedPrivateMailboxName(self):
+    return lib.mdAddrGetParsedPrivateMailboxName(self.I).decode(self.encoding)
 
-	def GetParsedPrivateMailboxNumber(self):
-		return lib.mdAddrGetParsedPrivateMailboxNumber(self.I).decode('utf-8')
+  def GetParsedPrivateMailboxNumber(self):
+    return lib.mdAddrGetParsedPrivateMailboxNumber(self.I).decode(self.encoding)
 
-	def GetParsedGarbage(self):
-		return lib.mdAddrGetParsedGarbage(self.I).decode('utf-8')
+  def GetParsedGarbage(self):
+    return lib.mdAddrGetParsedGarbage(self.I).decode(self.encoding)
 
-	def GetParsedRouteService(self):
-		return lib.mdAddrGetParsedRouteService(self.I).decode('utf-8')
+  def GetParsedRouteService(self):
+    return lib.mdAddrGetParsedRouteService(self.I).decode(self.encoding)
 
-	def GetParsedLockBox(self):
-		return lib.mdAddrGetParsedLockBox(self.I).decode('utf-8')
+  def GetParsedLockBox(self):
+    return lib.mdAddrGetParsedLockBox(self.I).decode(self.encoding)
 
-	def GetParsedDeliveryInstallation(self):
-		return lib.mdAddrGetParsedDeliveryInstallation(self.I).decode('utf-8')
+  def GetParsedDeliveryInstallation(self):
+    return lib.mdAddrGetParsedDeliveryInstallation(self.I).decode(self.encoding)
 
-	def SetReserved(self, p1, p2):
-		lib.mdAddrSetReserved(self.I, p1.encode('utf-8'), p2.encode('utf-8'))
+  def SetReserved(self, p1, p2):
+    lib.mdAddrSetReserved(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors))
 
-	def GetReserved(self, p1):
-		return lib.mdAddrGetReserved(self.I, p1.encode('utf-8')).decode('utf-8')
+  def GetReserved(self, p1):
+    return lib.mdAddrGetReserved(self.I, p1.encode(self.encoding, errors=self.errors)).decode(self.encoding)
 
 # mdParse Enumerations
 class ProgramStatus(Enum):
-	ErrorNone = 0
-	ErrorOther = 1
-	ErrorOutOfMemory = 2
-	ErrorRequiredFileNotFound = 3
-	ErrorFoundOldFile = 4
-	ErrorDatabaseExpired = 5
-	ErrorLicenseExpired = 6
+  ErrorNone = 0
+  ErrorOther = 1
+  ErrorOutOfMemory = 2
+  ErrorRequiredFileNotFound = 3
+  ErrorFoundOldFile = 4
+  ErrorDatabaseExpired = 5
+  ErrorLicenseExpired = 6
 
 class AccessType(Enum):
-	Local = 0
-	Remote = 1
+  Local = 0
+  Remote = 1
 
 class DiacriticsMode(Enum):
-	Auto = 0
-	On = 1
-	Off = 2
+  Auto = 0
+  On = 1
+  Off = 2
 
 class StandardizeMode(Enum):
-	ShortFormat = 0
-	LongFormat = 1
-	AutoFormat = 2
+  ShortFormat = 0
+  LongFormat = 1
+  AutoFormat = 2
 
 class SuiteParseMode(Enum):
-	ParseSuite = 0
-	CombineSuite = 1
+  ParseSuite = 0
+  CombineSuite = 1
 
 class AliasPreserveMode(Enum):
-	ConvertAlias = 0
-	PreserveAlias = 1
+  ConvertAlias = 0
+  PreserveAlias = 1
 
 class AutoCompletionMode(Enum):
-	AutoCompleteSingleSuite = 0
-	AutoCompleteRangedSuite = 1
-	AutoCompletePlaceHolderSuite = 2
-	AutoCompleteNoSuite = 3
+  AutoCompleteSingleSuite = 0
+  AutoCompleteRangedSuite = 1
+  AutoCompletePlaceHolderSuite = 2
+  AutoCompleteNoSuite = 3
 
 class ResultCdDescOpt(Enum):
-	ResultCodeDescriptionLong = 0
-	ResultCodeDescriptionShort = 1
+  ResultCodeDescriptionLong = 0
+  ResultCodeDescriptionShort = 1
 
 class MailboxLookupMode(Enum):
-	MailboxNone = 0
-	MailboxExpress = 1
-	MailboxPremium = 2
+  MailboxNone = 0
+  MailboxExpress = 1
+  MailboxPremium = 2
 
 class mdParse(object):
-	def __init__(self):
-		self.I = lib.mdParseCreate()
+  def __init__(self, encoding, errors):
+    self.encoding = encoding
+    self.errors = errors
+    self.I = lib.mdParseCreate()
 
-	def __del__(self):
-		lib.mdParseDestroy(self.I)
+  def __del__(self):
+    lib.mdParseDestroy(self.I)
 
-	def Initialize(self, p1):
-		return ProgramStatus(lib.mdParseInitialize(self.I, p1.encode('utf-8')))
+  def Initialize(self, p1):
+    return ProgramStatus(lib.mdParseInitialize(self.I, p1.encode(self.encoding, errors=self.errors)))
 
-	def GetBuildNumber(self):
-		return lib.mdParseGetBuildNumber(self.I).decode('utf-8')
+  def GetBuildNumber(self):
+    return lib.mdParseGetBuildNumber(self.I).decode(self.encoding)
 
-	def Parse(self, p1):
-		lib.mdParseParse(self.I, p1.encode('utf-8'))
+  def Parse(self, p1):
+    lib.mdParseParse(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def ParseCanadian(self, p1):
-		lib.mdParseParseCanadian(self.I, p1.encode('utf-8'))
+  def ParseCanadian(self, p1):
+    lib.mdParseParseCanadian(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def ParseNext(self):
-		return lib.mdParseParseNext(self.I)
+  def ParseNext(self):
+    return lib.mdParseParseNext(self.I)
 
-	def LastLineParse(self, p1):
-		lib.mdParseLastLineParse(self.I, p1.encode('utf-8'))
+  def LastLineParse(self, p1):
+    lib.mdParseLastLineParse(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def GetZip(self):
-		return lib.mdParseGetZip(self.I).decode('utf-8')
+  def GetZip(self):
+    return lib.mdParseGetZip(self.I).decode(self.encoding)
 
-	def GetPlus4(self):
-		return lib.mdParseGetPlus4(self.I).decode('utf-8')
+  def GetPlus4(self):
+    return lib.mdParseGetPlus4(self.I).decode(self.encoding)
 
-	def GetCity(self):
-		return lib.mdParseGetCity(self.I).decode('utf-8')
+  def GetCity(self):
+    return lib.mdParseGetCity(self.I).decode(self.encoding)
 
-	def GetState(self):
-		return lib.mdParseGetState(self.I).decode('utf-8')
+  def GetState(self):
+    return lib.mdParseGetState(self.I).decode(self.encoding)
 
-	def GetStreetName(self):
-		return lib.mdParseGetStreetName(self.I).decode('utf-8')
+  def GetStreetName(self):
+    return lib.mdParseGetStreetName(self.I).decode(self.encoding)
 
-	def GetRange(self):
-		return lib.mdParseGetRange(self.I).decode('utf-8')
+  def GetRange(self):
+    return lib.mdParseGetRange(self.I).decode(self.encoding)
 
-	def GetPreDirection(self):
-		return lib.mdParseGetPreDirection(self.I).decode('utf-8')
+  def GetPreDirection(self):
+    return lib.mdParseGetPreDirection(self.I).decode(self.encoding)
 
-	def GetPostDirection(self):
-		return lib.mdParseGetPostDirection(self.I).decode('utf-8')
+  def GetPostDirection(self):
+    return lib.mdParseGetPostDirection(self.I).decode(self.encoding)
 
-	def GetSuffix(self):
-		return lib.mdParseGetSuffix(self.I).decode('utf-8')
+  def GetSuffix(self):
+    return lib.mdParseGetSuffix(self.I).decode(self.encoding)
 
-	def GetSuiteName(self):
-		return lib.mdParseGetSuiteName(self.I).decode('utf-8')
+  def GetSuiteName(self):
+    return lib.mdParseGetSuiteName(self.I).decode(self.encoding)
 
-	def GetSuiteNumber(self):
-		return lib.mdParseGetSuiteNumber(self.I).decode('utf-8')
+  def GetSuiteNumber(self):
+    return lib.mdParseGetSuiteNumber(self.I).decode(self.encoding)
 
-	def GetPrivateMailboxNumber(self):
-		return lib.mdParseGetPrivateMailboxNumber(self.I).decode('utf-8')
+  def GetPrivateMailboxNumber(self):
+    return lib.mdParseGetPrivateMailboxNumber(self.I).decode(self.encoding)
 
-	def GetPrivateMailboxName(self):
-		return lib.mdParseGetPrivateMailboxName(self.I).decode('utf-8')
+  def GetPrivateMailboxName(self):
+    return lib.mdParseGetPrivateMailboxName(self.I).decode(self.encoding)
 
-	def GetGarbage(self):
-		return lib.mdParseGetGarbage(self.I).decode('utf-8')
+  def GetGarbage(self):
+    return lib.mdParseGetGarbage(self.I).decode(self.encoding)
 
-	def GetRouteService(self):
-		return lib.mdParseGetRouteService(self.I).decode('utf-8')
+  def GetRouteService(self):
+    return lib.mdParseGetRouteService(self.I).decode(self.encoding)
 
-	def GetLockBox(self):
-		return lib.mdParseGetLockBox(self.I).decode('utf-8')
+  def GetLockBox(self):
+    return lib.mdParseGetLockBox(self.I).decode(self.encoding)
 
-	def GetDeliveryInstallation(self):
-		return lib.mdParseGetDeliveryInstallation(self.I).decode('utf-8')
+  def GetDeliveryInstallation(self):
+    return lib.mdParseGetDeliveryInstallation(self.I).decode(self.encoding)
 
-	def ParseRule(self):
-		return lib.mdParseParseRule(self.I)
+  def ParseRule(self):
+    return lib.mdParseParseRule(self.I)
 
 # mdStreet Enumerations
 class ProgramStatus(Enum):
-	ErrorNone = 0
-	ErrorOther = 1
-	ErrorOutOfMemory = 2
-	ErrorRequiredFileNotFound = 3
-	ErrorFoundOldFile = 4
-	ErrorDatabaseExpired = 5
-	ErrorLicenseExpired = 6
+  ErrorNone = 0
+  ErrorOther = 1
+  ErrorOutOfMemory = 2
+  ErrorRequiredFileNotFound = 3
+  ErrorFoundOldFile = 4
+  ErrorDatabaseExpired = 5
+  ErrorLicenseExpired = 6
 
 class AccessType(Enum):
-	Local = 0
-	Remote = 1
+  Local = 0
+  Remote = 1
 
 class DiacriticsMode(Enum):
-	Auto = 0
-	On = 1
-	Off = 2
+  Auto = 0
+  On = 1
+  Off = 2
 
 class StandardizeMode(Enum):
-	ShortFormat = 0
-	LongFormat = 1
-	AutoFormat = 2
+  ShortFormat = 0
+  LongFormat = 1
+  AutoFormat = 2
 
 class SuiteParseMode(Enum):
-	ParseSuite = 0
-	CombineSuite = 1
+  ParseSuite = 0
+  CombineSuite = 1
 
 class AliasPreserveMode(Enum):
-	ConvertAlias = 0
-	PreserveAlias = 1
+  ConvertAlias = 0
+  PreserveAlias = 1
 
 class AutoCompletionMode(Enum):
-	AutoCompleteSingleSuite = 0
-	AutoCompleteRangedSuite = 1
-	AutoCompletePlaceHolderSuite = 2
-	AutoCompleteNoSuite = 3
+  AutoCompleteSingleSuite = 0
+  AutoCompleteRangedSuite = 1
+  AutoCompletePlaceHolderSuite = 2
+  AutoCompleteNoSuite = 3
 
 class ResultCdDescOpt(Enum):
-	ResultCodeDescriptionLong = 0
-	ResultCodeDescriptionShort = 1
+  ResultCodeDescriptionLong = 0
+  ResultCodeDescriptionShort = 1
 
 class MailboxLookupMode(Enum):
-	MailboxNone = 0
-	MailboxExpress = 1
-	MailboxPremium = 2
+  MailboxNone = 0
+  MailboxExpress = 1
+  MailboxPremium = 2
 
 class mdStreet(object):
-	def __init__(self):
-		self.I = lib.mdStreetCreate()
+  def __init__(self, encoding, errors):
+    self.encoding = encoding
+    self.errors = errors
+    self.I = lib.mdStreetCreate()
 
-	def __del__(self):
-		lib.mdStreetDestroy(self.I)
+  def __del__(self):
+    lib.mdStreetDestroy(self.I)
 
-	def Initialize(self, p1, p2, p3):
-		return ProgramStatus(lib.mdStreetInitialize(self.I, p1.encode('utf-8'), p2.encode('utf-8'), p3.encode('utf-8')))
+  def Initialize(self, p1, p2, p3):
+    return ProgramStatus(lib.mdStreetInitialize(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors), p3.encode(self.encoding, errors=self.errors)))
 
-	def GetInitializeErrorString(self):
-		return lib.mdStreetGetInitializeErrorString(self.I).decode('utf-8')
+  def GetInitializeErrorString(self):
+    return lib.mdStreetGetInitializeErrorString(self.I).decode(self.encoding)
 
-	def GetDatabaseDate(self):
-		return lib.mdStreetGetDatabaseDate(self.I).decode('utf-8')
+  def GetDatabaseDate(self):
+    return lib.mdStreetGetDatabaseDate(self.I).decode(self.encoding)
 
-	def GetBuildNumber(self):
-		return lib.mdStreetGetBuildNumber(self.I).decode('utf-8')
+  def GetBuildNumber(self):
+    return lib.mdStreetGetBuildNumber(self.I).decode(self.encoding)
 
-	def SetLicenseString(self, p1):
-		return lib.mdStreetSetLicenseString(self.I, p1.encode('utf-8'))
+  def SetLicenseString(self, p1):
+    return lib.mdStreetSetLicenseString(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def GetLicenseExpirationDate(self):
-		return lib.mdStreetGetLicenseExpirationDate(self.I).decode('utf-8')
+  def GetLicenseExpirationDate(self):
+    return lib.mdStreetGetLicenseExpirationDate(self.I).decode(self.encoding)
 
-	def FindStreet(self, p1, p2, p3):
-		return lib.mdStreetFindStreet(self.I, p1.encode('utf-8'), p2.encode('utf-8'), p3)
+  def FindStreet(self, p1, p2, p3):
+    return lib.mdStreetFindStreet(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors), p3)
 
-	def FindStreetNext(self):
-		return lib.mdStreetFindStreetNext(self.I)
+  def FindStreetNext(self):
+    return lib.mdStreetFindStreetNext(self.I)
 
-	def IsAddressInRange(self, p1, p2, p3):
-		return lib.mdStreetIsAddressInRange(self.I, p1.encode('utf-8'), p2.encode('utf-8'), p3.encode('utf-8'))
+  def IsAddressInRange(self, p1, p2, p3):
+    return lib.mdStreetIsAddressInRange(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors), p3.encode(self.encoding, errors=self.errors))
 
-	def IsAddressInRange2(self, p1, p2, p3, p4):
-		return lib.mdStreetIsAddressInRange2(self.I, p1.encode('utf-8'), p2.encode('utf-8'), p3.encode('utf-8'), p4.encode('utf-8'))
+  def IsAddressInRange2(self, p1, p2, p3, p4):
+    return lib.mdStreetIsAddressInRange2(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors), p3.encode(self.encoding, errors=self.errors), p4.encode(self.encoding, errors=self.errors))
 
-	def GetAutoCompletion(self, p1, p2, p3, p4):
-		return lib.mdStreetGetAutoCompletion(self.I, p1.encode('utf-8'), p2.encode('utf-8'), AutoCompletionMode(p3).value, p4).decode('utf-8')
+  def GetAutoCompletion(self, p1, p2, p3, p4):
+    return lib.mdStreetGetAutoCompletion(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors), AutoCompletionMode(p3).value, p4).decode(self.encoding)
 
-	def ResetAutoCompletion(self):
-		lib.mdStreetResetAutoCompletion(self.I)
+  def ResetAutoCompletion(self):
+    lib.mdStreetResetAutoCompletion(self.I)
 
-	def GetBaseAlternateIndicator(self):
-		return lib.mdStreetGetBaseAlternateIndicator(self.I).decode('utf-8')
+  def GetBaseAlternateIndicator(self):
+    return lib.mdStreetGetBaseAlternateIndicator(self.I).decode(self.encoding)
 
-	def GetLACSIndicator(self):
-		return lib.mdStreetGetLACSIndicator(self.I).decode('utf-8')
+  def GetLACSIndicator(self):
+    return lib.mdStreetGetLACSIndicator(self.I).decode(self.encoding)
 
-	def GetUrbanizationCode(self):
-		return lib.mdStreetGetUrbanizationCode(self.I).decode('utf-8')
+  def GetUrbanizationCode(self):
+    return lib.mdStreetGetUrbanizationCode(self.I).decode(self.encoding)
 
-	def GetUrbanizationName(self):
-		return lib.mdStreetGetUrbanizationName(self.I).decode('utf-8')
+  def GetUrbanizationName(self):
+    return lib.mdStreetGetUrbanizationName(self.I).decode(self.encoding)
 
-	def GetLastLineNumber(self):
-		return lib.mdStreetGetLastLineNumber(self.I).decode('utf-8')
+  def GetLastLineNumber(self):
+    return lib.mdStreetGetLastLineNumber(self.I).decode(self.encoding)
 
-	def GetAddressType(self):
-		return lib.mdStreetGetAddressType(self.I).decode('utf-8')
+  def GetAddressType(self):
+    return lib.mdStreetGetAddressType(self.I).decode(self.encoding)
 
-	def GetCongressionalDistrict(self):
-		return lib.mdStreetGetCongressionalDistrict(self.I).decode('utf-8')
+  def GetCongressionalDistrict(self):
+    return lib.mdStreetGetCongressionalDistrict(self.I).decode(self.encoding)
 
-	def GetCountyFips(self):
-		return lib.mdStreetGetCountyFips(self.I).decode('utf-8')
+  def GetCountyFips(self):
+    return lib.mdStreetGetCountyFips(self.I).decode(self.encoding)
 
-	def GetCompany(self):
-		return lib.mdStreetGetCompany(self.I).decode('utf-8')
+  def GetCompany(self):
+    return lib.mdStreetGetCompany(self.I).decode(self.encoding)
 
-	def GetCarrierRoute(self):
-		return lib.mdStreetGetCarrierRoute(self.I).decode('utf-8')
+  def GetCarrierRoute(self):
+    return lib.mdStreetGetCarrierRoute(self.I).decode(self.encoding)
 
-	def GetZip(self):
-		return lib.mdStreetGetZip(self.I).decode('utf-8')
+  def GetZip(self):
+    return lib.mdStreetGetZip(self.I).decode(self.encoding)
 
-	def GetDeliveryInstallation(self):
-		return lib.mdStreetGetDeliveryInstallation(self.I).decode('utf-8')
+  def GetDeliveryInstallation(self):
+    return lib.mdStreetGetDeliveryInstallation(self.I).decode(self.encoding)
 
-	def GetPlus4High(self):
-		return lib.mdStreetGetPlus4High(self.I).decode('utf-8')
+  def GetPlus4High(self):
+    return lib.mdStreetGetPlus4High(self.I).decode(self.encoding)
 
-	def GetPlus4Low(self):
-		return lib.mdStreetGetPlus4Low(self.I).decode('utf-8')
+  def GetPlus4Low(self):
+    return lib.mdStreetGetPlus4Low(self.I).decode(self.encoding)
 
-	def GetSuiteRangeOddEven(self):
-		return lib.mdStreetGetSuiteRangeOddEven(self.I).decode('utf-8')
+  def GetSuiteRangeOddEven(self):
+    return lib.mdStreetGetSuiteRangeOddEven(self.I).decode(self.encoding)
 
-	def GetSuiteRangeHigh(self):
-		return lib.mdStreetGetSuiteRangeHigh(self.I).decode('utf-8')
+  def GetSuiteRangeHigh(self):
+    return lib.mdStreetGetSuiteRangeHigh(self.I).decode(self.encoding)
 
-	def GetSuiteRangeLow(self):
-		return lib.mdStreetGetSuiteRangeLow(self.I).decode('utf-8')
+  def GetSuiteRangeLow(self):
+    return lib.mdStreetGetSuiteRangeLow(self.I).decode(self.encoding)
 
-	def GetSuiteName(self):
-		return lib.mdStreetGetSuiteName(self.I).decode('utf-8')
+  def GetSuiteName(self):
+    return lib.mdStreetGetSuiteName(self.I).decode(self.encoding)
 
-	def GetPostDirection(self):
-		return lib.mdStreetGetPostDirection(self.I).decode('utf-8')
+  def GetPostDirection(self):
+    return lib.mdStreetGetPostDirection(self.I).decode(self.encoding)
 
-	def GetSuffix(self):
-		return lib.mdStreetGetSuffix(self.I).decode('utf-8')
+  def GetSuffix(self):
+    return lib.mdStreetGetSuffix(self.I).decode(self.encoding)
 
-	def GetStreetName(self):
-		return lib.mdStreetGetStreetName(self.I).decode('utf-8')
+  def GetStreetName(self):
+    return lib.mdStreetGetStreetName(self.I).decode(self.encoding)
 
-	def GetPreDirection(self):
-		return lib.mdStreetGetPreDirection(self.I).decode('utf-8')
+  def GetPreDirection(self):
+    return lib.mdStreetGetPreDirection(self.I).decode(self.encoding)
 
-	def GetPrimaryRangeOddEven(self):
-		return lib.mdStreetGetPrimaryRangeOddEven(self.I).decode('utf-8')
+  def GetPrimaryRangeOddEven(self):
+    return lib.mdStreetGetPrimaryRangeOddEven(self.I).decode(self.encoding)
 
-	def GetPrimaryRangeHigh(self):
-		return lib.mdStreetGetPrimaryRangeHigh(self.I).decode('utf-8')
+  def GetPrimaryRangeHigh(self):
+    return lib.mdStreetGetPrimaryRangeHigh(self.I).decode(self.encoding)
 
-	def GetPrimaryRangeLow(self):
-		return lib.mdStreetGetPrimaryRangeLow(self.I).decode('utf-8')
+  def GetPrimaryRangeLow(self):
+    return lib.mdStreetGetPrimaryRangeLow(self.I).decode(self.encoding)
 
 # mdZip Enumerations
 class ProgramStatus(Enum):
-	ErrorNone = 0
-	ErrorOther = 1
-	ErrorOutOfMemory = 2
-	ErrorRequiredFileNotFound = 3
-	ErrorFoundOldFile = 4
-	ErrorDatabaseExpired = 5
-	ErrorLicenseExpired = 6
+  ErrorNone = 0
+  ErrorOther = 1
+  ErrorOutOfMemory = 2
+  ErrorRequiredFileNotFound = 3
+  ErrorFoundOldFile = 4
+  ErrorDatabaseExpired = 5
+  ErrorLicenseExpired = 6
 
 class AccessType(Enum):
-	Local = 0
-	Remote = 1
+  Local = 0
+  Remote = 1
 
 class DiacriticsMode(Enum):
-	Auto = 0
-	On = 1
-	Off = 2
+  Auto = 0
+  On = 1
+  Off = 2
 
 class StandardizeMode(Enum):
-	ShortFormat = 0
-	LongFormat = 1
-	AutoFormat = 2
+  ShortFormat = 0
+  LongFormat = 1
+  AutoFormat = 2
 
 class SuiteParseMode(Enum):
-	ParseSuite = 0
-	CombineSuite = 1
+  ParseSuite = 0
+  CombineSuite = 1
 
 class AliasPreserveMode(Enum):
-	ConvertAlias = 0
-	PreserveAlias = 1
+  ConvertAlias = 0
+  PreserveAlias = 1
 
 class AutoCompletionMode(Enum):
-	AutoCompleteSingleSuite = 0
-	AutoCompleteRangedSuite = 1
-	AutoCompletePlaceHolderSuite = 2
-	AutoCompleteNoSuite = 3
+  AutoCompleteSingleSuite = 0
+  AutoCompleteRangedSuite = 1
+  AutoCompletePlaceHolderSuite = 2
+  AutoCompleteNoSuite = 3
 
 class ResultCdDescOpt(Enum):
-	ResultCodeDescriptionLong = 0
-	ResultCodeDescriptionShort = 1
+  ResultCodeDescriptionLong = 0
+  ResultCodeDescriptionShort = 1
 
 class MailboxLookupMode(Enum):
-	MailboxNone = 0
-	MailboxExpress = 1
-	MailboxPremium = 2
+  MailboxNone = 0
+  MailboxExpress = 1
+  MailboxPremium = 2
 
 class mdZip(object):
-	def __init__(self):
-		self.I = lib.mdZipCreate()
+  def __init__(self, encoding, errors):
+    self.encoding = encoding
+    self.errors = errors
+    self.I = lib.mdZipCreate()
 
-	def __del__(self):
-		lib.mdZipDestroy(self.I)
+  def __del__(self):
+    lib.mdZipDestroy(self.I)
 
-	def Initialize(self, p1, p2, p3):
-		return ProgramStatus(lib.mdZipInitialize(self.I, p1.encode('utf-8'), p2.encode('utf-8'), p3.encode('utf-8')))
+  def Initialize(self, p1, p2, p3):
+    return ProgramStatus(lib.mdZipInitialize(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors), p3.encode(self.encoding, errors=self.errors)))
 
-	def GetInitializeErrorString(self):
-		return lib.mdZipGetInitializeErrorString(self.I).decode('utf-8')
+  def GetInitializeErrorString(self):
+    return lib.mdZipGetInitializeErrorString(self.I).decode(self.encoding)
 
-	def GetDatabaseDate(self):
-		return lib.mdZipGetDatabaseDate(self.I).decode('utf-8')
+  def GetDatabaseDate(self):
+    return lib.mdZipGetDatabaseDate(self.I).decode(self.encoding)
 
-	def GetBuildNumber(self):
-		return lib.mdZipGetBuildNumber(self.I).decode('utf-8')
+  def GetBuildNumber(self):
+    return lib.mdZipGetBuildNumber(self.I).decode(self.encoding)
 
-	def SetLicenseString(self, p1):
-		return lib.mdZipSetLicenseString(self.I, p1.encode('utf-8'))
+  def SetLicenseString(self, p1):
+    return lib.mdZipSetLicenseString(self.I, p1.encode(self.encoding, errors=self.errors))
 
-	def GetLicenseExpirationDate(self):
-		return lib.mdZipGetLicenseExpirationDate(self.I).decode('utf-8')
+  def GetLicenseExpirationDate(self):
+    return lib.mdZipGetLicenseExpirationDate(self.I).decode(self.encoding)
 
-	def FindZip(self, p1, p2):
-		return lib.mdZipFindZip(self.I, p1.encode('utf-8'), p2)
+  def FindZip(self, p1, p2):
+    return lib.mdZipFindZip(self.I, p1.encode(self.encoding, errors=self.errors), p2)
 
-	def FindZipNext(self):
-		return lib.mdZipFindZipNext(self.I)
+  def FindZipNext(self):
+    return lib.mdZipFindZipNext(self.I)
 
-	def FindZipInCity(self, p1, p2):
-		return lib.mdZipFindZipInCity(self.I, p1.encode('utf-8'), p2.encode('utf-8'))
+  def FindZipInCity(self, p1, p2):
+    return lib.mdZipFindZipInCity(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors))
 
-	def FindZipInCityNext(self):
-		return lib.mdZipFindZipInCityNext(self.I)
+  def FindZipInCityNext(self):
+    return lib.mdZipFindZipInCityNext(self.I)
 
-	def FindCityInState(self, p1, p2):
-		return lib.mdZipFindCityInState(self.I, p1.encode('utf-8'), p2.encode('utf-8'))
+  def FindCityInState(self, p1, p2):
+    return lib.mdZipFindCityInState(self.I, p1.encode(self.encoding, errors=self.errors), p2.encode(self.encoding, errors=self.errors))
 
-	def FindCityInStateNext(self):
-		return lib.mdZipFindCityInStateNext(self.I)
+  def FindCityInStateNext(self):
+    return lib.mdZipFindCityInStateNext(self.I)
 
-	def ComputeDistance(self, p1, p2, p3, p4):
-		return lib.mdZipComputeDistance(self.I)
+  def ComputeDistance(self, p1, p2, p3, p4):
+    return lib.mdZipComputeDistance(self.I, p1, p2, p3, p4)
 
-	def ComputeBearing(self, p1, p2, p3, p4):
-		return lib.mdZipComputeBearing(self.I)
+  def ComputeBearing(self, p1, p2, p3, p4):
+    return lib.mdZipComputeBearing(self.I, p1, p2, p3, p4)
 
-	def GetCountyNameFromFips(self, p1):
-		return lib.mdZipGetCountyNameFromFips(self.I, p1.encode('utf-8')).decode('utf-8')
+  def GetCountyNameFromFips(self, p1):
+    return lib.mdZipGetCountyNameFromFips(self.I, p1.encode(self.encoding, errors=self.errors)).decode(self.encoding)
 
-	def GetSCFArea(self, p1, p2, p3, p4, p5):
-		return lib.mdZipGetSCFArea(self.I, p1.encode('utf-8'), p2, p3, p4, p5)
+  def GetSCFArea(self, p1, p2, p3, p4, p5):
+    return lib.mdZipGetSCFArea(self.I, p1.encode(self.encoding, errors=self.errors), p2, p3, p4, p5)
 
-	def GetZip(self):
-		return lib.mdZipGetZip(self.I).decode('utf-8')
+  def GetZip(self):
+    return lib.mdZipGetZip(self.I).decode(self.encoding)
 
-	def GetCity(self):
-		return lib.mdZipGetCity(self.I).decode('utf-8')
+  def GetCity(self):
+    return lib.mdZipGetCity(self.I).decode(self.encoding)
 
-	def GetCityAbbreviation(self):
-		return lib.mdZipGetCityAbbreviation(self.I).decode('utf-8')
+  def GetCityAbbreviation(self):
+    return lib.mdZipGetCityAbbreviation(self.I).decode(self.encoding)
 
-	def GetState(self):
-		return lib.mdZipGetState(self.I).decode('utf-8')
+  def GetState(self):
+    return lib.mdZipGetState(self.I).decode(self.encoding)
 
-	def GetZipType(self):
-		return lib.mdZipGetZipType(self.I).decode('utf-8')
+  def GetZipType(self):
+    return lib.mdZipGetZipType(self.I).decode(self.encoding)
 
-	def GetCountyName(self):
-		return lib.mdZipGetCountyName(self.I).decode('utf-8')
+  def GetCountyName(self):
+    return lib.mdZipGetCountyName(self.I).decode(self.encoding)
 
-	def GetCountyFips(self):
-		return lib.mdZipGetCountyFips(self.I).decode('utf-8')
+  def GetCountyFips(self):
+    return lib.mdZipGetCountyFips(self.I).decode(self.encoding)
 
-	def GetAreaCode(self):
-		return lib.mdZipGetAreaCode(self.I).decode('utf-8')
+  def GetAreaCode(self):
+    return lib.mdZipGetAreaCode(self.I).decode(self.encoding)
 
-	def GetLongitude(self):
-		return lib.mdZipGetLongitude(self.I).decode('utf-8')
+  def GetLongitude(self):
+    return lib.mdZipGetLongitude(self.I).decode(self.encoding)
 
-	def GetLatitude(self):
-		return lib.mdZipGetLatitude(self.I).decode('utf-8')
+  def GetLatitude(self):
+    return lib.mdZipGetLatitude(self.I).decode(self.encoding)
 
-	def GetTimeZone(self):
-		return lib.mdZipGetTimeZone(self.I).decode('utf-8')
+  def GetTimeZone(self):
+    return lib.mdZipGetTimeZone(self.I).decode(self.encoding)
 
-	def GetTimeZoneCode(self):
-		return lib.mdZipGetTimeZoneCode(self.I).decode('utf-8')
+  def GetTimeZoneCode(self):
+    return lib.mdZipGetTimeZoneCode(self.I).decode(self.encoding)
 
-	def GetMsa(self):
-		return lib.mdZipGetMsa(self.I).decode('utf-8')
+  def GetMsa(self):
+    return lib.mdZipGetMsa(self.I).decode(self.encoding)
 
-	def GetPmsa(self):
-		return lib.mdZipGetPmsa(self.I).decode('utf-8')
+  def GetPmsa(self):
+    return lib.mdZipGetPmsa(self.I).decode(self.encoding)
 
-	def GetFacilityCode(self):
-		return lib.mdZipGetFacilityCode(self.I).decode('utf-8')
+  def GetFacilityCode(self):
+    return lib.mdZipGetFacilityCode(self.I).decode(self.encoding)
 
-	def GetLastLineIndicator(self):
-		return lib.mdZipGetLastLineIndicator(self.I).decode('utf-8')
+  def GetLastLineIndicator(self):
+    return lib.mdZipGetLastLineIndicator(self.I).decode(self.encoding)
 
-	def GetLastLineNumber(self):
-		return lib.mdZipGetLastLineNumber(self.I).decode('utf-8')
+  def GetLastLineNumber(self):
+    return lib.mdZipGetLastLineNumber(self.I).decode(self.encoding)
 
-	def GetPreferredLastLineNumber(self):
-		return lib.mdZipGetPreferredLastLineNumber(self.I).decode('utf-8')
+  def GetPreferredLastLineNumber(self):
+    return lib.mdZipGetPreferredLastLineNumber(self.I).decode(self.encoding)
 
-	def GetAutomation(self):
-		return lib.mdZipGetAutomation(self.I).decode('utf-8')
+  def GetAutomation(self):
+    return lib.mdZipGetAutomation(self.I).decode(self.encoding)
 
-	def GetFinanceNumber(self):
-		return lib.mdZipGetFinanceNumber(self.I).decode('utf-8')
+  def GetFinanceNumber(self):
+    return lib.mdZipGetFinanceNumber(self.I).decode(self.encoding)
